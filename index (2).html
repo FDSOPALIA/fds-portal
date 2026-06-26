@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="Portail FDS Opalia Recordati – Consultez et téléchargez les Fiches de Données de Sécurité des produits Opalia Recordati, Tunisie."/>
+<title>Opalia Recordati – FDS Portal</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23C8102E'/><text x='16' y='23' font-size='16' font-family='serif' font-weight='bold' fill='white' text-anchor='middle'>OR</text></svg>"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#C8102E;--dark-red:#9B0B22;--tint:#F5C6CF;--footer:#1a1a1a;
+  --font-head:'Playfair Display',serif;--font-body:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);color:#333;background:#f7f7f7;min-height:100vh}
+
+/* HEADER */
+#site-header{
+  position:sticky;top:0;z-index:100;background:#fff;
+  border-bottom:3px solid var(--red);
+  box-shadow:0 2px 12px rgba(0,0,0,0.10);
+}
+.header-inner{
+  max-width:1280px;margin:0 auto;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px;
+}
+.header-left{display:flex;align-items:center;gap:12px;min-width:0}
+.logo-img{height:44px;object-fit:contain;flex-shrink:0}
+#logo-fallback{
+  display:none;width:44px;height:44px;border-radius:8px;
+  background:var(--red);color:#fff;font-family:var(--font-head);
+  font-weight:700;font-size:16px;align-items:center;justify-content:center;flex-shrink:0;
+}
+.header-brand{min-width:0}
+.header-brand strong{display:block;font-family:var(--font-head);font-size:1.05rem;color:#1a1a1a;white-space:nowrap}
+.header-subtitle{font-size:.75rem;color:#888;font-weight:400}
+@media(max-width:400px){.header-subtitle{display:none}}
+.btn-admin{
+  display:flex;align-items:center;gap:6px;
+  background:var(--red);color:#fff;border:none;border-radius:8px;
+  padding:8px 16px;font-family:var(--font-body);font-size:.875rem;font-weight:600;
+  cursor:pointer;transition:background .2s;white-space:nowrap;flex-shrink:0;
+}
+.btn-admin:hover{background:var(--dark-red)}
+
+/* HERO */
+#hero{
+  background:linear-gradient(135deg,#C8102E 0%,#9B0B22 100%);
+  position:relative;min-height:220px;padding:48px 24px 80px;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+#hero::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(255,255,255,0.12) 1px,transparent 1px);
+  background-size:24px 24px;opacity:.04;pointer-events:none;
+}
+.hero-content{position:relative;z-index:1;text-align:center;max-width:680px}
+.hero-pill{
+  display:inline-block;background:rgba(255,255,255,0.18);color:#fff;
+  border:1px solid rgba(255,255,255,0.35);border-radius:999px;
+  padding:4px 14px;font-size:.7rem;font-weight:600;letter-spacing:1.5px;
+  text-transform:uppercase;margin-bottom:18px;
+}
+.hero-title{
+  font-family:var(--font-head);font-size:clamp(2rem,5vw,3rem);
+  font-weight:700;color:#fff;line-height:1.15;margin-bottom:12px;
+}
+.hero-sub{color:rgba(255,255,255,.85);font-size:1rem;font-weight:400;margin-bottom:8px}
+.hero-note{color:rgba(255,255,255,.65);font-size:.82rem;font-weight:300}
+
+/* QR CARD */
+#qr-card{
+  max-width:540px;margin:-48px auto 0;position:relative;z-index:10;
+  background:#fff;border-radius:14px;border-top:4px solid var(--red);
+  box-shadow:0 8px 40px rgba(0,0,0,0.14);padding:24px;
+  display:flex;align-items:center;gap:20px;
+}
+@media(max-width:500px){#qr-card{flex-direction:column;text-align:center;margin:0 12px;margin-top:-40px}}
+#qr-home-box{width:100px;height:100px;flex-shrink:0;background:#f3f3f3;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#qr-home-box img,#qr-home-box canvas{max-width:96px;max-height:96px}
+.qr-card-content{}
+.qr-card-content h3{font-family:var(--font-head);font-size:1.05rem;color:#1a1a1a;margin-bottom:6px}
+.qr-card-content p{font-size:.8rem;color:#666;line-height:1.5;margin-bottom:10px}
+.qr-portal-pill{
+  display:inline-block;background:var(--tint);color:var(--dark-red);
+  border-radius:999px;padding:3px 12px;font-size:.72rem;font-weight:600;
+}
+
+/* MAIN CONTENT */
+#main-wrap{max-width:1280px;margin:0 auto;padding:0 20px 48px}
+
+/* SEARCH TOOLBAR */
+#search-toolbar{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  margin:2rem auto;
+}
+.search-box{
+  position:relative;flex:1;min-width:220px;
+}
+.search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#999;font-size:1.1rem}
+#search-input{
+  width:100%;padding:12px 16px 12px 42px;border:1.5px solid #e0e0e0;border-radius:10px;
+  font-family:var(--font-body);font-size:.9rem;color:#333;background:#fff;
+  transition:border-color .2s;outline:none;
+}
+#search-input:focus{border-color:var(--red)}
+#doc-count{font-weight:700;color:var(--red);font-size:.95rem;white-space:nowrap}
+
+/* LOADING STATE */
+#loading-state{
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 20px;gap:16px;color:#666;
+}
+.spinner{
+  width:40px;height:40px;border:3px solid #eee;border-top-color:var(--red);
+  border-radius:50%;animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* FOLDER GRID */
+#folders-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;
+}
+.folder-card{
+  background:#fff;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,0.08);
+  padding:24px;display:flex;flex-direction:column;gap:12px;
+  transition:transform .2s,box-shadow .2s;cursor:pointer;
+  border:1.5px solid transparent;
+}
+.folder-card:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,0.13);border-color:var(--tint)}
+.folder-card-header{display:flex;align-items:center;gap:10px}
+.folder-icon-wrap{
+  width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:1.6rem;flex-shrink:0;
+}
+.folder-meta{min-width:0}
+.folder-code{
+  display:inline-block;background:#f0f0f0;color:#555;border-radius:6px;
+  padding:2px 8px;font-size:.7rem;font-weight:600;letter-spacing:.5px;margin-bottom:4px;
+}
+.folder-name{font-family:var(--font-head);font-size:1rem;color:#1a1a1a;font-weight:600}
+.folder-doc-count{font-size:.78rem;color:#888;font-weight:400}
+.folder-qr-box{
+  background:#f5f5f5;border-radius:8px;padding:8px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.folder-qr-box canvas,.folder-qr-box img{max-width:90px;max-height:90px}
+.folder-qr-label{font-size:.65rem;color:#888;text-align:center}
+.folder-actions{display:flex;gap:8px;margin-top:auto}
+.btn-open-folder{
+  flex:1;background:var(--red);color:#fff;border:none;border-radius:8px;
+  padding:9px;font-family:var(--font-body);font-size:.85rem;font-weight:600;
+  cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-open-folder:hover{background:var(--dark-red)}
+.folder-admin-btns{display:none;gap:6px}
+.admin-mode .folder-admin-btns{display:flex}
+.btn-icon{
+  background:#f5f5f5;border:none;border-radius:8px;width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  color:#555;transition:background .2s,color .2s;font-size:1rem;
+}
+.btn-icon:hover{background:#eee;color:#333}
+.btn-icon.danger:hover{background:#ffeef0;color:var(--red)}
+
+/* BREADCRUMB */
+#breadcrumb-bar{
+  display:none;background:#fff;border-bottom:1.5px solid #eee;
+  padding:10px 20px;position:sticky;top:71px;z-index:90;
+}
+.breadcrumb-inner{
+  max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.breadcrumb-home{
+  color:var(--red);cursor:pointer;font-weight:500;
+  display:flex;align-items:center;gap:4px;font-size:.88rem;
+  background:none;border:none;font-family:var(--font-body);
+}
+.breadcrumb-home:hover{text-decoration:underline}
+.breadcrumb-sep{color:#ccc}
+.breadcrumb-current{color:#333;font-size:.88rem;font-weight:500}
+.btn-back{
+  display:flex;align-items:center;gap:6px;
+  background:none;border:1.5px solid #ddd;border-radius:8px;
+  padding:6px 14px;font-family:var(--font-body);font-size:.82rem;
+  color:#555;cursor:pointer;transition:all .2s;margin-left:auto;
+}
+.btn-back:hover{border-color:var(--red);color:var(--red)}
+
+/* DOCS GRID */
+#docs-section{display:none}
+#docs-section h2{font-family:var(--font-head);font-size:1.4rem;color:#1a1a1a;margin-bottom:16px}
+#cards-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px;
+}
+.doc-card{
+  background:#fff;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,0.08);
+  padding:20px;display:flex;flex-direction:column;gap:12px;
+  border:1.5px solid transparent;transition:transform .2s,box-shadow .2s,border-color .2s;
+}
+.doc-card:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,0.12);border-color:var(--tint)}
+.doc-card-top{display:flex;align-items:center;justify-content:space-between}
+.doc-code-badge{
+  background:var(--tint);color:var(--dark-red);border-radius:6px;
+  padding:3px 10px;font-size:.7rem;font-weight:700;letter-spacing:.5px;
+}
+.doc-title{font-family:var(--font-head);font-size:1rem;color:#1a1a1a;font-weight:600;line-height:1.3}
+.doc-pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{
+  display:inline-block;border-radius:999px;padding:2px 10px;font-size:.7rem;font-weight:600;
+}
+.pill-green{background:#e8f5e9;color:#2e7d32}
+.pill-blue{background:#e3f2fd;color:#1565c0}
+.pill-orange{background:#fff3e0;color:#e65100}
+.pill-red{background:#ffeef0;color:var(--red)}
+.pill-grey{background:#f0f0f0;color:#555}
+.doc-qr-box{
+  background:#f5f5f5;border-radius:8px;padding:8px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.doc-qr-box canvas,.doc-qr-box img{max-width:90px;max-height:90px}
+.doc-qr-label{font-size:.65rem;color:#888;text-align:center}
+.doc-card-actions{display:flex;gap:8px}
+.btn-view{
+  flex:1;background:var(--red);color:#fff;border:none;border-radius:8px;
+  padding:9px;font-family:var(--font-body);font-size:.85rem;font-weight:600;
+  cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-view:hover{background:var(--dark-red)}
+.btn-dl{
+  flex:1;background:#fff;color:var(--red);border:1.5px solid var(--red);border-radius:8px;
+  padding:9px;font-family:var(--font-body);font-size:.85rem;font-weight:600;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-dl:hover{background:var(--tint)}
+.admin-only{display:none}
+.admin-mode .admin-only{display:flex}
+
+/* EMPTY STATE */
+.empty-state{
+  text-align:center;padding:60px 20px;color:#aaa;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+.empty-state i{font-size:3rem;color:#ddd}
+.empty-state p{font-size:.95rem}
+
+/* OVERLAYS / MODALS */
+.overlay{
+  display:none;position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,0.55);overflow-y:auto;
+}
+.overlay.active{display:flex}
+#admin-overlay{z-index:150;}
+.modal-box{
+  background:#fff;border-radius:16px;padding:32px;
+  max-width:480px;width:calc(100% - 48px);margin:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,0.2);
+}
+.modal-title{font-family:var(--font-head);font-size:1.25rem;color:#1a1a1a;margin-bottom:20px}
+.modal-label{font-size:.82rem;font-weight:600;color:#555;margin-bottom:6px;display:block}
+.modal-input{
+  width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:8px;
+  font-family:var(--font-body);font-size:.9rem;color:#333;outline:none;
+  transition:border-color .2s;margin-bottom:16px;
+}
+.modal-input:focus{border-color:var(--red)}
+.modal-actions{display:flex;gap:10px;margin-top:8px}
+.btn-primary{
+  flex:1;background:var(--red);color:#fff;border:none;border-radius:8px;
+  padding:11px;font-family:var(--font-body);font-size:.9rem;font-weight:600;
+  cursor:pointer;transition:background .2s;
+}
+.btn-primary:hover{background:var(--dark-red)}
+.btn-primary:disabled{background:#ccc;cursor:not-allowed}
+.btn-secondary{
+  flex:1;background:#f5f5f5;color:#333;border:none;border-radius:8px;
+  padding:11px;font-family:var(--font-body);font-size:.9rem;font-weight:500;cursor:pointer;
+  transition:background .2s;
+}
+.btn-secondary:hover{background:#eee}
+.error-msg{color:var(--red);font-size:.82rem;margin-bottom:12px;display:none}
+
+/* VIEWER */
+#viewer-overlay{
+  flex-direction:column;background:#1a1a1a;
+}
+#viewer-overlay.active{display:flex}
+#viewer-topbar{
+  background:#2a2a2a;padding:12px 20px;
+  display:flex;align-items:center;gap:12px;flex-shrink:0;
+  border-bottom:1px solid #3a3a3a;
+}
+#viewer-back{
+  background:none;border:1px solid #555;color:#fff;border-radius:8px;
+  padding:7px 14px;font-family:var(--font-body);font-size:.85rem;cursor:pointer;
+  display:flex;align-items:center;gap:6px;transition:border-color .2s;
+}
+#viewer-back:hover{border-color:#aaa}
+.viewer-title-wrap{flex:1;text-align:center;min-width:0}
+#viewer-title{font-family:var(--font-head);color:#fff;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#viewer-code{color:#aaa;font-size:.75rem}
+#viewer-download{
+  background:var(--red);color:#fff;border:none;border-radius:8px;
+  padding:8px 16px;font-family:var(--font-body);font-size:.85rem;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .2s;flex-shrink:0;
+}
+#viewer-download:hover{background:var(--dark-red)}
+#viewer-loading{
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  flex:1;gap:16px;color:#aaa;
+}
+#viewer-embed{flex:1;width:100%;border:none;background:#111}
+
+/* ADMIN PANEL */
+#admin-overlay{
+  flex-direction:column;
+}
+#admin-overlay.active{display:flex}
+#admin-header{
+  background:#3D3D3D;padding:14px 20px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0;
+}
+#admin-back{
+  background:none;border:1px solid #666;color:#fff;border-radius:8px;
+  padding:6px 14px;font-family:var(--font-body);font-size:.85rem;cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+}
+#admin-back:hover{border-color:#aaa}
+.admin-header-title{font-family:var(--font-head);color:#fff;font-size:1.1rem;flex:1}
+.admin-badge{background:var(--red);color:#fff;border-radius:6px;padding:3px 10px;font-size:.72rem;font-weight:700}
+.btn-admin-action{
+  background:var(--red);color:#fff;border:none;border-radius:8px;
+  padding:8px 14px;font-family:var(--font-body);font-size:.83rem;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .2s;
+}
+.btn-admin-action:hover{background:var(--dark-red)}
+#admin-tabs{
+  display:flex;background:#2e2e2e;flex-shrink:0;
+  border-bottom:2px solid #444;
+}
+.tab-btn{
+  padding:12px 24px;background:none;border:none;color:#aaa;
+  font-family:var(--font-body);font-size:.88rem;font-weight:500;cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .2s;
+}
+.tab-btn.active{color:#fff;border-bottom-color:var(--red)}
+#admin-body{flex:1;overflow-y:auto;background:#f7f7f7;padding:20px}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ADMIN LIST */
+.admin-list{display:flex;flex-direction:column;gap:10px}
+.admin-list-item{
+  background:#fff;border-radius:10px;padding:14px 16px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+}
+.admin-item-code{
+  background:var(--tint);color:var(--dark-red);border-radius:6px;
+  padding:2px 8px;font-size:.7rem;font-weight:700;white-space:nowrap;flex-shrink:0;
+}
+.admin-item-title{flex:1;font-size:.88rem;color:#333;font-weight:500;min-width:120px}
+.admin-folder-pill{
+  background:#f0f0f0;color:#555;border-radius:999px;
+  padding:2px 10px;font-size:.7rem;font-weight:500;
+}
+.admin-size{font-size:.75rem;color:#999;white-space:nowrap}
+.admin-item-actions{display:flex;gap:6px;margin-left:auto}
+.admin-folder-select{
+  border:1px solid #ddd;border-radius:6px;padding:4px 8px;
+  font-family:var(--font-body);font-size:.78rem;color:#333;
+  cursor:pointer;max-width:160px;
+}
+.color-swatch{
+  width:28px;height:28px;border-radius:50%;cursor:pointer;
+  border:2px solid transparent;transition:border-color .2s;flex-shrink:0;
+}
+.color-swatch.selected{border-color:#333}
+.swatches-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.icon-option{
+  width:40px;height:40px;border-radius:8px;border:1.5px solid #ddd;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:1.2rem;color:#555;transition:border-color .2s,background .2s;
+}
+.icon-option.selected{border-color:var(--red);background:var(--tint);color:var(--red)}
+.icons-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+
+/* UPLOAD MODAL */
+#drop-zone{
+  border:2px dashed #ddd;border-radius:10px;padding:32px;text-align:center;
+  color:#aaa;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:16px;
+}
+#drop-zone.drag-over{border-color:var(--red);background:var(--tint);}
+#drop-zone i{font-size:2rem;margin-bottom:8px;display:block}
+#drop-zone p{font-size:.85rem}
+.upload-queue{display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;margin-bottom:16px}
+.queue-item{
+  display:flex;align-items:center;gap:10px;padding:8px 12px;
+  background:#f9f9f9;border-radius:8px;
+}
+.queue-item i{color:var(--red);font-size:1.2rem;flex-shrink:0}
+.queue-item-name{flex:1;font-size:.82rem;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.queue-item-size{font-size:.75rem;color:#999;flex-shrink:0}
+.queue-remove{background:none;border:none;color:#ccc;cursor:pointer;font-size:1rem;padding:2px 4px}
+.queue-remove:hover{color:var(--red)}
+.folder-select-wrap{margin-bottom:16px}
+
+/* DELETE MODAL */
+.delete-warning{
+  background:#fff5f5;border:1px solid var(--tint);border-radius:8px;
+  padding:14px;margin-bottom:16px;font-size:.85rem;color:#555;line-height:1.5;
+}
+.toggle-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer}
+.toggle-check{width:18px;height:18px;accent-color:var(--red);cursor:pointer}
+
+/* CONFIG TAB */
+.config-section{display:flex;flex-direction:column;gap:14px}
+.config-warning{
+  background:#fff5f5;border:1px solid var(--tint);border-radius:8px;
+  padding:12px 16px;font-size:.82rem;color:#9B0B22;display:flex;align-items:flex-start;gap:8px;
+}
+.config-warning i{flex-shrink:0;margin-top:2px}
+.config-note{font-size:.78rem;color:#888;margin-top:-8px}
+.config-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-reset{
+  background:#f5f5f5;color:#555;border:1.5px solid #ddd;border-radius:8px;
+  padding:10px 18px;font-family:var(--font-body);font-size:.88rem;font-weight:500;cursor:pointer;
+  transition:all .2s;
+}
+.btn-reset:hover{background:#eee;border-color:#ccc}
+
+/* TOAST */
+#toast-container{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  z-index:9999;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;
+}
+.toast{
+  padding:10px 22px;border-radius:999px;color:#fff;font-size:.85rem;font-weight:500;
+  box-shadow:0 4px 20px rgba(0,0,0,0.18);
+  animation:slideUp .3s ease,fadeOut .3s ease 2.5s forwards;
+  pointer-events:auto;font-family:var(--font-body);
+}
+.toast-success{background:#2e7d32}
+.toast-danger{background:var(--red)}
+.toast-info{background:#1565c0}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+
+/* FOOTER */
+footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
+.footer-inner{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px}
+@media(max-width:768px){.footer-inner{grid-template-columns:1fr}}
+.footer-section-label{
+  color:var(--red);text-transform:uppercase;font-size:.7rem;font-weight:700;
+  letter-spacing:2px;margin-bottom:12px;
+}
+.footer-section h2{font-family:var(--font-head);color:#fff;font-size:1.4rem;margin-bottom:16px}
+.footer-section p{font-size:.85rem;line-height:1.7;margin-bottom:12px;color:#aaa}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.stat-box{background:#2a2a2a;border-radius:10px;padding:14px;text-align:center}
+.stat-box strong{display:block;font-family:var(--font-head);color:#fff;font-size:1.1rem}
+.stat-box span{font-size:.72rem;color:#888}
+.contact-item{
+  display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;
+  padding:10px;background:#2a2a2a;border-radius:8px;
+}
+.contact-item i{color:var(--red);font-size:1.1rem;flex-shrink:0;margin-top:2px}
+.contact-item span,.contact-item a{font-size:.82rem;color:#aaa;line-height:1.5}
+.contact-item a{color:var(--tint);text-decoration:none}
+.contact-item a:hover{text-decoration:underline}
+.footer-bar{
+  max-width:1280px;margin:40px auto 0;padding:20px 0;
+  border-top:1px solid #333;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+}
+.footer-bar-left{display:flex;align-items:center;gap:10px}
+.footer-bar-left span{color:#fff;font-weight:600;font-size:.9rem}
+.footer-logo{height:36px;object-fit:contain}
+.btn-site{
+  background:var(--red);color:#fff;border:none;border-radius:8px;
+  padding:9px 18px;font-family:var(--font-body);font-size:.85rem;font-weight:600;
+  cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+  transition:background .2s;
+}
+.btn-site:hover{background:var(--dark-red)}
+.footer-copy{
+  width:100%;max-width:1280px;margin:0 auto;
+  padding:12px 0 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.footer-copy span{font-size:.75rem;color:#666}
+.footer-copy a{font-size:.75rem;color:#888;text-decoration:none}
+.footer-copy a:hover{color:#ccc;text-decoration:underline}
+
+/* BOUTON IMPRESSION QR */
+.btn-print-qr{
+  background:#f5f5f5;color:#555;border:1.5px solid #ddd;border-radius:8px;
+  padding:6px 10px;font-family:var(--font-body);font-size:.78rem;font-weight:500;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;
+  white-space:nowrap;
+}
+.btn-print-qr:hover{background:#eee;border-color:#bbb;color:#333}
+
+/* FENÊTRE D'IMPRESSION QR */
+#qr-print-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,0.6);align-items:center;justify-content:center;
+}
+#qr-print-overlay.active{display:flex}
+#qr-print-box{
+  background:#fff;border-radius:16px;padding:32px;
+  max-width:340px;width:calc(100% - 48px);
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  text-align:center;
+}
+#qr-print-title{font-family:var(--font-head);font-size:1rem;color:#1a1a1a;font-weight:600;line-height:1.3}
+#qr-print-code{font-size:.75rem;color:#888;margin-top:-8px}
+#qr-print-canvas{background:#f9f9f9;border-radius:8px;padding:12px}
+.qr-print-actions{display:flex;gap:10px;width:100%;margin-top:4px}
+
+/* STYLE IMPRESSION NAVIGATEUR */
+@media print{
+  body > *{display:none!important}
+  #qr-print-sheet{
+    display:flex!important;flex-direction:column;align-items:center;
+    justify-content:center;min-height:100vh;gap:16px;font-family:sans-serif;
+  }
+  #qr-print-sheet h2{font-size:1.1rem;color:#000;text-align:center;max-width:280px}
+  #qr-print-sheet p{font-size:.8rem;color:#555}
+}
+#qr-print-sheet{display:none}
+
+@media(max-width:640px){
+  #folders-grid{grid-template-columns:1fr}
+  #cards-grid{grid-template-columns:1fr}
+  .modal-box{padding:24px 18px}
+  #admin-header{gap:8px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="site-header">
+  <div class="header-inner">
+    <div class="header-left">
+      <img class="logo-img" src="https://opaliarecordati.com/wp-content/uploads/2021/03/logo-opalia.png" height="44" alt="Opalia Recordati" onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='flex'"/>
+      <div id="logo-fallback" style="display:none;width:44px;height:44px;border-radius:8px;background:#C8102E;color:#fff;font-family:'Playfair Display',serif;font-weight:700;font-size:16px;align-items:center;justify-content:center;flex-shrink:0;">OR</div>
+      <div class="header-brand">
+        <strong>Opalia Recordati</strong>
+        <div class="header-subtitle">Fiche de Données de Sécurité</div>
+      </div>
+    </div>
+    <button class="btn-admin" onclick="handleAdminBtn()">
+      <i class="ti ti-lock"></i> Admin
+    </button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-content">
+    <div class="hero-pill">PORTAIL OFFICIEL</div>
+    <h1 class="hero-title">FDS Portal</h1>
+    <p class="hero-sub">Fiches de Données de Sécurité · Opalia Recordati</p>
+    <p class="hero-note">Consultez et téléchargez vos fiches produits en toute simplicité</p>
+  </div>
+</section>
+
+<!-- QR CARD -->
+<div style="max-width:1280px;margin:0 auto;padding:0 20px">
+  <div id="qr-card">
+    <div id="qr-home-box"></div>
+    <div class="qr-card-content">
+      <h3>Accès Mobile au FDS Portal</h3>
+      <p>Scannez pour accéder au portail FDS Opalia Recordati depuis votre mobile ou tablette.</p>
+      <span class="qr-portal-pill">QR Code du Portail</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN WRAP -->
+<div id="main-wrap">
+
+  <!-- SEARCH TOOLBAR -->
+  <div id="search-toolbar">
+    <div class="search-box">
+      <i class="ti ti-search"></i>
+      <input type="text" id="search-input" placeholder="Rechercher une fiche produit par titre ou code…" oninput="handleSearch()"/>
+    </div>
+    <span id="doc-count"></span>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div id="loading-state">
+    <div class="spinner"></div>
+    <span>Chargement…</span>
+  </div>
+
+  <!-- FOLDERS -->
+  <div id="folders-section">
+    <div id="folders-grid"></div>
+  </div>
+
+  <!-- DOCS SECTION -->
+  <div id="docs-section">
+    <div id="cards-grid"></div>
+  </div>
+
+</div>
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb-bar">
+  <div class="breadcrumb-inner">
+    <button class="breadcrumb-home" onclick="closeFolder()">
+      <i class="ti ti-home"></i> Accueil
+    </button>
+    <span class="breadcrumb-sep">›</span>
+    <span id="breadcrumb-folder-name" class="breadcrumb-current"></span>
+    <button class="btn-back" onclick="closeFolder()">
+      <i class="ti ti-arrow-left"></i> Retour aux dossiers
+    </button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-section">
+      <div class="footer-section-label">À PROPOS</div>
+      <h2>Opalia Recordati</h2>
+      <p>Opalia Recordati est une entreprise pharmaceutique tunisienne fondée il y a plus de 35 ans, dédiée à la fabrication et la distribution de médicaments de haute qualité à travers le monde.</p>
+      <p>Filiale du groupe Recordati, l'entreprise s'appuie sur une mission d'excellence pharmaceutique, de recherche et d'innovation au service de la santé.</p>
+      <div class="stats-grid">
+        <div class="stat-box"><strong>+35 Ans</strong><span>d'expérience</span></div>
+        <div class="stat-box"><strong>+25 Pays</strong><span>exportateurs</span></div>
+        <div class="stat-box"><strong>+400</strong><span>Collaborateurs</span></div>
+        <div class="stat-box"><strong>150+ Pays</strong><span>(groupe)</span></div>
+      </div>
+    </div>
+    <div class="footer-section">
+      <div class="footer-section-label">CONTACT</div>
+      <h2>Nous contacter</h2>
+      <div class="contact-item">
+        <i class="ti ti-map-pin"></i>
+        <span>27 Avenue de la Livre Sterling, Les Berges du Lac 2 – 1053 Tunis</span>
+      </div>
+      <div class="contact-item">
+        <i class="ti ti-building-factory-2"></i>
+        <span>Zone industrielle Kalaat Al Andalous 2022, Ariana</span>
+      </div>
+      <div class="contact-item">
+        <i class="ti ti-phone"></i>
+        <span>(+216) 71 19 63 57 / (+216) 70 55 90 70</span>
+      </div>
+      <div class="contact-item">
+        <i class="ti ti-mail"></i>
+        <a href="mailto:contact@opaliarecordati.com">contact@opaliarecordati.com</a>
+      </div>
+    </div>
+  </div>
+  <div style="max-width:1280px;margin:0 auto;padding:0 0">
+    <div class="footer-bar">
+      <div class="footer-bar-left">
+        <img class="footer-logo" src="https://opaliarecordati.com/wp-content/uploads/2021/03/logo-opalia.png" alt="Opalia Recordati" onerror="this.style.display='none'"/>
+        <span>Opalia Recordati</span>
+      </div>
+      <a class="btn-site" href="https://opaliarecordati.com/en/" target="_blank" rel="noopener">
+        <i class="ti ti-external-link"></i> Visiter le site officiel
+      </a>
+    </div>
+    <div class="footer-copy">
+      <span>© 2025 Opalia Recordati SARL. Tous droits réservés.</span>
+      <a href="https://opaliarecordati.com/en/opalia-recordati-corporate-governance/opalia-recordati-privacy-policy/" target="_blank" rel="noopener">Privacy Policy</a>
+      <a href="https://opaliarecordati.com/en/legal-notice/" target="_blank" rel="noopener">Mentions légales</a>
+    </div>
+  </div>
+</footer>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- ADMIN LOGIN -->
+<div class="overlay" id="login-overlay" onclick="overlayClickClose(event,'login-overlay')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-title">Connexion Administrateur</div>
+    <label class="modal-label">Mot de passe</label>
+    <input class="modal-input" type="password" id="admin-pwd" placeholder="Mot de passe administrateur" onkeydown="if(event.key==='Enter')checkAdminPassword()"/>
+    <div class="error-msg" id="login-error">Mot de passe incorrect.</div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('login-overlay')">Annuler</button>
+      <button class="btn-primary" onclick="checkAdminPassword()">Se connecter</button>
+    </div>
+  </div>
+</div>
+
+<!-- RENAME FOLDER -->
+<div class="overlay" id="rename-folder-overlay" onclick="overlayClickClose(event,'rename-folder-overlay')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-title">Renommer le dossier</div>
+    <label class="modal-label">Nouveau nom</label>
+    <input class="modal-input" type="text" id="rename-folder-input" placeholder="Nom du dossier" onkeydown="if(event.key==='Enter')submitRenameFolder()"/>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('rename-folder-overlay')">Annuler</button>
+      <button class="btn-primary" onclick="submitRenameFolder()">Renommer</button>
+    </div>
+  </div>
+</div>
+
+<!-- RENAME DOC -->
+<div class="overlay" id="rename-doc-overlay" onclick="overlayClickClose(event,'rename-doc-overlay')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-title">Renommer le document</div>
+    <label class="modal-label">Nouveau titre</label>
+    <input class="modal-input" type="text" id="rename-doc-input" placeholder="Titre du document" onkeydown="if(event.key==='Enter')submitRenameDoc()"/>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('rename-doc-overlay')">Annuler</button>
+      <button class="btn-primary" onclick="submitRenameDoc()">Renommer</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE DOC CONFIRM -->
+<div class="overlay" id="delete-doc-overlay" onclick="overlayClickClose(event,'delete-doc-overlay')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-title">Supprimer le document</div>
+    <div class="delete-warning">
+      <i class="ti ti-alert-triangle" style="color:var(--red)"></i>
+      Cette action est irréversible. Le document sera définitivement supprimé.
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('delete-doc-overlay')">Annuler</button>
+      <button class="btn-primary" onclick="executeDelete()">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE FOLDER CONFIRM -->
+<div class="overlay" id="delete-folder-overlay" onclick="overlayClickClose(event,'delete-folder-overlay')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-title">Supprimer le dossier</div>
+    <div class="delete-warning">
+      <i class="ti ti-alert-triangle" style="color:var(--red)"></i>
+      Cette action est irréversible. Choisissez le sort des documents contenus.
+    </div>
+    <label class="toggle-row">
+      <input class="toggle-check" type="checkbox" id="delete-docs-also" checked onchange="deleteDocsAlso=this.checked"/>
+      Supprimer aussi les PDFs du dossier
+    </label>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('delete-folder-overlay')">Annuler</button>
+      <button class="btn-primary" onclick="executeDeleteFolder()">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE FOLDER -->
+<div class="overlay" id="create-folder-overlay" onclick="overlayClickClose(event,'create-folder-overlay')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-title">Nouveau dossier</div>
+    <label class="modal-label">Nom du dossier *</label>
+    <input class="modal-input" type="text" id="create-folder-name" placeholder="Nom du dossier"/>
+    <label class="modal-label">Couleur</label>
+    <div class="swatches-row" id="color-swatches"></div>
+    <label class="modal-label">Icône</label>
+    <div class="icons-row" id="icon-options"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('create-folder-overlay')">Annuler</button>
+      <button class="btn-primary" onclick="submitCreateFolder()">Créer</button>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD -->
+<div class="overlay" id="upload-overlay" onclick="overlayClickClose(event,'upload-overlay')">
+  <div class="modal-box" style="max-width:560px" onclick="event.stopPropagation()">
+    <div class="modal-title">Ajouter des PDFs</div>
+    <div id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
+      <i class="ti ti-upload"></i>
+      <p>Glissez vos PDFs ici ou cliquez pour sélectionner</p>
+    </div>
+    <input type="file" id="file-input" accept=".pdf" multiple style="display:none" onchange="handleFileInput(this.files)"/>
+    <div class="upload-queue" id="upload-queue"></div>
+    <div class="folder-select-wrap">
+      <label class="modal-label">Dossier de destination</label>
+      <select class="modal-input" id="upload-folder-select" style="margin-bottom:0">
+        <option value="">— Documents généraux —</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('upload-overlay')">Annuler</button>
+      <button class="btn-primary" id="btn-confirm-upload" onclick="confirmUpload()" disabled>Ajouter les documents</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR PRINT OVERLAY -->
+<div id="qr-print-overlay" onclick="if(event.target===this)closeQRPrint()">
+  <div id="qr-print-box">
+    <div id="qr-print-title"></div>
+    <div id="qr-print-code"></div>
+    <div id="qr-print-canvas"></div>
+    <div class="qr-print-actions">
+      <button class="btn-secondary" onclick="closeQRPrint()">Fermer</button>
+      <button class="btn-primary" onclick="doPrint()"><i class="ti ti-printer"></i> Imprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- FEUILLE D'IMPRESSION (cachée, visible uniquement à l'impression) -->
+<div id="qr-print-sheet"></div>
+
+<!-- PDF VIEWER -->
+<div class="overlay" id="viewer-overlay">
+  <div id="viewer-topbar">
+    <button id="viewer-back"><i class="ti ti-arrow-left"></i> Retour</button>
+    <div class="viewer-title-wrap">
+      <div id="viewer-title"></div>
+      <div id="viewer-code"></div>
+    </div>
+    <button id="viewer-download"><i class="ti ti-download"></i> Télécharger</button>
+  </div>
+  <div id="viewer-loading">
+    <div class="spinner" style="border-top-color:#C8102E;border-color:#444;border-top-color:#C8102E"></div>
+    <span>Chargement du document…</span>
+  </div>
+  <iframe id="viewer-embed" allowfullscreen></iframe>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="overlay" id="admin-overlay">
+  <div id="admin-header">
+    <button id="admin-back" onclick="closeAdmin()"><i class="ti ti-arrow-left"></i> Retour</button>
+    <span class="admin-header-title">Panneau Administrateur</span>
+    <span class="admin-badge">Admin</span>
+    <button class="btn-admin-action" onclick="openUploadModal()"><i class="ti ti-upload"></i> Ajouter des PDFs</button>
+    <button class="btn-admin-action" onclick="openCreateFolderModal()"><i class="ti ti-folder-plus"></i> Nouveau dossier</button>
+  </div>
+  <div id="admin-tabs">
+    <button class="tab-btn active" onclick="switchTab('docs')">Documents</button>
+    <button class="tab-btn" onclick="switchTab('folders')">Dossiers</button>
+    <button class="tab-btn" onclick="switchTab('config')">Configuration</button>
+  </div>
+  <div id="admin-body">
+    <div class="tab-pane active" id="tab-docs">
+      <div class="admin-list" id="admin-docs-list"></div>
+    </div>
+    <div class="tab-pane" id="tab-folders">
+      <div class="admin-list" id="admin-folders-list"></div>
+    </div>
+    <div class="tab-pane" id="tab-config">
+      <div class="config-section">
+        <div class="config-warning">
+          <i class="ti ti-alert-triangle"></i>
+          <span>Ces informations sont sensibles. Ne les partagez qu'avec un administrateur de confiance.</span>
+        </div>
+        <div>
+          <label class="modal-label">Supabase URL</label>
+          <input class="modal-input" type="text" id="config-url" style="margin-bottom:0"/>
+        </div>
+        <div>
+          <label class="modal-label">Supabase API Key</label>
+          <input class="modal-input" type="text" id="config-key" style="margin-bottom:0"/>
+        </div>
+        <div class="config-btns">
+          <button class="btn-primary" style="flex:none;padding:10px 20px" onclick="saveConfig()">Enregistrer la configuration</button>
+          <button class="btn-reset" onclick="resetConfig()">Réinitialiser</button>
+        </div>
+        <p class="config-note">Après enregistrement, la page se rechargera automatiquement.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== SUPABASE CONFIG =====================
+const DEFAULT_SUPABASE_URL="https://imcretfkhclkvqiwlkwz.supabase.co";
+const DEFAULT_SUPABASE_KEY="sb_publishable_ULNLs0LVB3bVRHCJyMEHcA_sxWvHxLP";
+
+function getSupabaseURL(){return localStorage.getItem('fds_supabase_url')||DEFAULT_SUPABASE_URL;}
+function getSupabaseKey(){return localStorage.getItem('fds_supabase_key')||DEFAULT_SUPABASE_KEY;}
+function getHeaders(){
+  const key=getSupabaseKey();
+  return{
+    "Content-Type":"application/json",
+    "apikey":key,
+    "Authorization":"Bearer "+key,
+    "Prefer":"return=representation"
+  };
+}
+
+// ===================== STATE =====================
+let documents=[];
+let folders=[];
+let isAdmin=false;
+let currentFolderId=null;
+let pendingDeleteId=null;
+let pendingDeleteFolderId=null;
+let deleteDocsAlso=true;
+let pendingRenameFolderId=null;
+let pendingRenameDocId=null;
+let uploadQueue=[];
+let selectedFolderId=null;
+let selectedColor='#C8102E';
+let selectedIcon='ti-folder';
+
+const FOLDER_COLORS=['#C8102E','#1a73e8','#2e7d32','#e65100','#6a1b9a','#00695c'];
+const FOLDER_ICONS=['ti-folder','ti-flask','ti-pill','ti-file-text','ti-shield','ti-box'];
+
+// ===================== SUPABASE FUNCTIONS =====================
+async function loadFolders(){
+  try{
+    const r=await fetch(getSupabaseURL()+"/rest/v1/folders?select=*&order=created_at.asc",{headers:getHeaders()});
+    const data=await r.json();
+    folders=Array.isArray(data)?data:[];
+  }catch(e){showToast("Erreur de connexion. Veuillez réessayer.","danger");}
+}
+
+async function loadDocuments(){
+  try{
+    const r=await fetch(
+      getSupabaseURL()+"/rest/v1/documents?select=id,code,title,size,pills,folder_id,created_at&order=created_at.asc",
+      {headers:getHeaders()}
+    );
+    const data=await r.json();
+    documents=Array.isArray(data)?data:[];
+  }catch(e){showToast("Erreur de connexion. Veuillez réessayer.","danger");}
+}
+
+async function fetchBase64(id){
+  try{
+    const r=await fetch(getSupabaseURL()+"/rest/v1/documents?select=base64&id=eq."+id,{headers:getHeaders()});
+    const data=await r.json();
+    return data[0]?.base64||null;
+  }catch(e){
+    showToast("Erreur de chargement du document.","danger");
+    return null;
+  }
+}
+
+async function saveFolderInsert(f){
+  try{await fetch(getSupabaseURL()+"/rest/v1/folders",{method:"POST",headers:getHeaders(),body:JSON.stringify(f)});}
+  catch(e){showToast("Erreur de connexion. Veuillez réessayer.","danger");}
+}
+async function saveFolderUpdate(id,changes){
+  try{await fetch(getSupabaseURL()+"/rest/v1/folders?id=eq."+id,{method:"PATCH",headers:getHeaders(),body:JSON.stringify(changes)});}
+  catch(e){showToast("Erreur de connexion. Veuillez réessayer.","danger");}
+}
+async function deleteFolderDB(id){
+  try{await fetch(getSupabaseURL()+"/rest/v1/folders?id=eq."+id,{method:"DELETE",headers:getHeaders()});}
+  catch(e){showToast("Erreur de connexion. Veuillez réessayer.","danger");}
+}
+async function saveDocumentInsert(d){
+  try{await fetch(getSupabaseURL()+"/rest/v1/documents",{method:"POST",headers:getHeaders(),body:JSON.stringify(d)});}
+  catch(e){showToast("Erreur de connexion. Veuillez réessayer.","danger");}
+}
+async function saveDocumentUpdate(id,changes){
+  try{await fetch(getSupabaseURL()+"/rest/v1/documents?id=eq."+id,{method:"PATCH",headers:getHeaders(),body:JSON.stringify(changes)});}
+  catch(e){showToast("Erreur de connexion. Veuillez réessayer.","danger");}
+}
+async function deleteDocumentDB(id){
+  try{await fetch(getSupabaseURL()+"/rest/v1/documents?id=eq."+id,{method:"DELETE",headers:getHeaders()});}
+  catch(e){showToast("Erreur de connexion. Veuillez réessayer.","danger");}
+}
+
+// ===================== URL BUILDERS =====================
+function buildViewerURL(code){const b=location.href.split('?')[0].split('#')[0];return b+'?view='+encodeURIComponent(code);}
+function buildFolderURL(code){const b=location.href.split('?')[0].split('#')[0];return b+'?folder='+encodeURIComponent(code);}
+function buildHomeURL(){return location.href.split('?')[0].split('#')[0];}
+
+// ===================== HELPERS =====================
+function esc(str){
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function formatSize(bytes){
+  if(!bytes)return'';
+  if(bytes<1024)return bytes+'B';
+  if(bytes<1048576)return(bytes/1024).toFixed(1)+'KB';
+  return(bytes/1048576).toFixed(1)+'MB';
+}
+
+// ===================== GÉNÉRATION DE CODE DEPUIS LE NOM DU FICHIER =====================
+// Le code = nom du fichier sans extension (ex: RL556.pdf → RL556, Acide_chlorhydrique.pdf → Acide chlorhydrique)
+// Si le code existe déjà, on ajoute un suffixe -2, -3, etc.
+async function generateUniqueCode(fileName){
+  await loadDocuments(); // Synchronise avec la base avant de générer
+  // Extraire le nom sans extension et nettoyer
+  let base = (fileName||'document')
+    .replace(/\.pdf$/i,'')       // enlever .pdf
+    .replace(/[-_]/g,' ')        // remplacer tirets/underscores par espaces
+    .trim();
+  // Vérifier unicité, ajouter suffixe si doublon
+  const existing = documents.map(d=>(d.code||'').toLowerCase());
+  let code = base;
+  let n = 2;
+  while(existing.includes(code.toLowerCase())){
+    code = base + ' ' + n;
+    n++;
+  }
+  return code;
+}
+
+function generateFolderCode(){
+  const existing=folders.map(f=>f.code).filter(c=>c&&c.startsWith('RL-F'));
+  let n=1;
+  while(existing.includes('RL-F'+String(n).padStart(2,'0')))n++;
+  return'RL-F'+String(n).padStart(2,'0');
+}
+function getPillClass(color){
+  const map={green:'pill-green',blue:'pill-blue',orange:'pill-orange',red:'pill-red',grey:'pill-grey'};
+  return map[color]||'pill-grey';
+}
+
+// ===================== TOAST =====================
+function showToast(msg,type){
+  const tc=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  t.className='toast toast-'+type;
+  t.textContent=msg;
+  tc.appendChild(t);
+  setTimeout(()=>t.remove(),2900);
+}
+
+// ===================== MODAL =====================
+function openModal(id){document.getElementById(id).classList.add('active');document.body.style.overflow='hidden';}
+function closeModal(id){
+  document.getElementById(id).classList.remove('active');
+  if(!document.querySelector('.overlay.active'))document.body.style.overflow='';
+}
+function overlayClickClose(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+
+// ===================== QR CODES =====================
+const qrCache={};
+function makeQR(containerId,url,size){
+  if(qrCache[containerId])return;
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  try{
+    new QRCode(el,{text:url,width:size,height:size,correctLevel:QRCode.CorrectLevel.M});
+    qrCache[containerId]=true;
+  }catch(e){}
+}
+
+// ===================== RENDER FOLDERS =====================
+function renderFolders(){
+  const grid=document.getElementById('folders-grid');
+  const q=(document.getElementById('search-input').value||'').toLowerCase();
+  if(currentFolderId)return;
+
+  document.getElementById('docs-section').style.display='none';
+  document.getElementById('folders-section').style.display='';
+  document.getElementById('breadcrumb-bar').style.display='none';
+
+  let filtered=folders;
+  if(q){
+    filtered=folders.filter(f=>
+      (f.name||'').toLowerCase().includes(q)||(f.code||'').toLowerCase().includes(q)
+    );
+  }
+
+  if(filtered.length===0){
+    grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-folder-off"></i><p>Aucun dossier disponible.</p></div>';
+    updateDocCount();
+    return;
+  }
+
+  grid.innerHTML=filtered.map(f=>{
+    const docCount=documents.filter(d=>d.folder_id===f.id).length;
+    const iconColor=f.color||'#C8102E';
+    const icon=f.icon||'ti-folder';
+    const qrId='qr-folder-'+f.id;
+    return`<div class="folder-card" onclick="openFolder('${esc(f.id)}')">
+      <div class="folder-card-header">
+        <div class="folder-icon-wrap" style="background:${esc(iconColor)}22">
+          <i class="ti ${esc(icon)}" style="color:${esc(iconColor)}"></i>
+        </div>
+        <div class="folder-meta">
+          <span class="folder-code">${esc(f.code||'')}</span>
+          <div class="folder-name">${esc(f.name||'Sans nom')}</div>
+          <div class="folder-doc-count">${docCount} document(s)</div>
+        </div>
+      </div>
+      <div class="folder-qr-box">
+        <div id="${qrId}"></div>
+        <div class="folder-qr-label">Scanner pour ouvrir le dossier</div>
+      </div>
+      <div class="folder-actions">
+        <button class="btn-open-folder" onclick="event.stopPropagation();openFolder('${esc(f.id)}')">
+          <i class="ti ti-folder-open"></i> Ouvrir
+        </button>
+        <div class="folder-admin-btns">
+          <button class="btn-icon" onclick="event.stopPropagation();openRenameFolderModal('${esc(f.id)}')" title="Renommer">
+            <i class="ti ti-pencil"></i>
+          </button>
+          <button class="btn-icon danger" onclick="event.stopPropagation();confirmDeleteFolder('${esc(f.id)}')" title="Supprimer">
+            <i class="ti ti-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  setTimeout(()=>{
+    filtered.forEach(f=>{
+      makeQR('qr-folder-'+f.id,buildFolderURL(f.code||f.id),90);
+    });
+  },50);
+
+  updateDocCount();
+}
+
+// ===================== OPEN / CLOSE FOLDER =====================
+function openFolder(id){
+  currentFolderId=id;
+  const folder=folders.find(f=>f.id===id);
+  document.getElementById('breadcrumb-folder-name').textContent=folder?folder.name:'';
+  document.getElementById('breadcrumb-bar').style.display='';
+  document.getElementById('folders-section').style.display='none';
+  document.getElementById('docs-section').style.display='block';
+  renderCards();
+}
+
+function closeFolder(){
+  currentFolderId=null;
+  document.getElementById('breadcrumb-bar').style.display='none';
+  document.getElementById('docs-section').style.display='none';
+  document.getElementById('folders-section').style.display='';
+  // Remonter en haut de page pour voir les dossiers
+  window.scrollTo({top:0,behavior:'smooth'});
+  renderFolders();
+}
+
+// ===================== RENDER CARDS =====================
+function renderCards(){
+  if(!currentFolderId)return;
+  const grid=document.getElementById('cards-grid');
+  const q=(document.getElementById('search-input').value||'').toLowerCase();
+
+  let filtered=documents.filter(d=>d.folder_id===currentFolderId);
+  if(q){
+    filtered=filtered.filter(d=>
+      (d.title||'').toLowerCase().includes(d.code||'').toLowerCase().includes(q)||
+      (d.title||'').toLowerCase().includes(q)
+    );
+  }
+
+  if(filtered.length===0){
+    grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-file-off"></i><p>Aucun document dans ce dossier.</p></div>';
+    updateDocCount();
+    return;
+  }
+
+  grid.innerHTML=filtered.map(doc=>{
+    const pills=(doc.pills||[]).map(p=>`<span class="pill ${getPillClass(p.color)}">${esc(p.label)}</span>`).join('');
+    const qrId='qr-doc-'+doc.id;
+    return`<div class="doc-card">
+      <div class="doc-card-top">
+        <span class="doc-code-badge">${esc(doc.code||'')}</span>
+        <button class="btn-icon danger admin-only" onclick="confirmDelete('${esc(doc.id)}')" title="Supprimer" style="display:none">
+          <i class="ti ti-trash"></i>
+        </button>
+      </div>
+      <div class="doc-title">${esc(doc.title||'Sans titre')}</div>
+      <div class="doc-pills">${pills}</div>
+      <div class="doc-qr-box">
+        <div id="${qrId}"></div>
+        <div class="doc-qr-label">Scanner pour aperçu</div>
+      </div>
+      <div class="doc-card-actions">
+        <button class="btn-view" onclick="openViewer('${esc(doc.id)}')">
+          <i class="ti ti-eye"></i> Voir
+        </button>
+        <button class="btn-dl" onclick="downloadDoc('${esc(doc.id)}')">
+          <i class="ti ti-download"></i> Télécharger
+        </button>
+      </div>
+      <button class="btn-print-qr" onclick="printQR('${esc(doc.id)}','doc')">
+        <i class="ti ti-printer"></i> Imprimer QR
+      </button>
+    </div>`;
+  }).join('');
+
+  if(isAdmin){
+    grid.querySelectorAll('.admin-only').forEach(el=>el.style.display='flex');
+  }
+
+  setTimeout(()=>{
+    filtered.forEach(doc=>{
+      makeQR('qr-doc-'+doc.id,buildViewerURL(doc.code||doc.id),90);
+    });
+  },50);
+
+  updateDocCount();
+}
+
+function updateDocCount(){
+  const el=document.getElementById('doc-count');
+  if(currentFolderId){
+    const count=documents.filter(d=>d.folder_id===currentFolderId).length;
+    el.textContent=count+' fiche(s) disponible(s)';
+  } else {
+    el.textContent=documents.length+' fiche(s) disponible(s)';
+  }
+}
+
+// ===================== SEARCH =====================
+function handleSearch(){
+  if(currentFolderId)renderCards();
+  else renderFolders();
+}
+
+// ===================== HELPER : base64 → Blob URL =====================
+function base64ToBlobUrl(base64){
+  const byteChars=atob(base64);
+  const byteArr=new Uint8Array(byteChars.length);
+  for(let i=0;i<byteChars.length;i++) byteArr[i]=byteChars.charCodeAt(i);
+  const blob=new Blob([byteArr],{type:'application/pdf'});
+  return URL.createObjectURL(blob);
+}
+
+// ===================== VIEWER =====================
+async function openViewer(id){
+  const doc=documents.find(d=>d.id===id);
+  if(!doc)return;
+  document.getElementById('viewer-title').textContent=doc.title||'';
+  document.getElementById('viewer-code').textContent=doc.code||'';
+  document.getElementById('viewer-embed').src='';
+  document.getElementById('viewer-loading').style.display='flex';
+  openModal('viewer-overlay');
+
+  const base64=doc.base64||await fetchBase64(id);
+  document.getElementById('viewer-loading').style.display='none';
+
+  if(!base64){
+    showToast("Impossible de charger le document.","danger");
+    closeModal('viewer-overlay');
+    return;
+  }
+  doc.base64=base64;
+
+  const blobUrl=base64ToBlobUrl(base64);
+  const embed=document.getElementById('viewer-embed');
+
+  if(embed._blobUrl){ URL.revokeObjectURL(embed._blobUrl); }
+  embed._blobUrl=blobUrl;
+
+  if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
+    window.open(blobUrl,'_blank');
+    closeViewer();
+  } else {
+    embed.src=blobUrl+"#toolbar=1&navpanes=0&view=FitH";
+  }
+
+  document.getElementById('viewer-back').onclick=()=>{
+    closeViewer();
+    if(doc.folder_id)openFolder(doc.folder_id);else closeFolder();
+  };
+
+  document.getElementById('viewer-download').onclick=()=>{
+    const a=document.createElement('a');
+    a.href=blobUrl;
+    a.download=(doc.title||'document')+".pdf";
+    a.click();
+  };
+}
+
+function closeViewer(){
+  const embed=document.getElementById('viewer-embed');
+  if(embed._blobUrl){
+    URL.revokeObjectURL(embed._blobUrl);
+    embed._blobUrl=null;
+  }
+  embed.src='';
+  closeModal('viewer-overlay');
+}
+
+async function downloadDoc(id){
+  const doc=documents.find(d=>d.id===id);
+  if(!doc)return;
+  const base64=doc.base64||await fetchBase64(id);
+  if(!base64){showToast("Impossible de charger le document.","danger");return;}
+  doc.base64=base64;
+  const blobUrl=base64ToBlobUrl(base64);
+  const a=document.createElement('a');
+  a.href=blobUrl;
+  a.download=(doc.title||'document')+".pdf";
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(blobUrl),5000);
+}
+
+// ===================== ADMIN =====================
+function handleAdminBtn(){
+  if(isAdmin)openAdmin();
+  else openAdminLogin();
+}
+
+function openAdminLogin(){
+  document.getElementById('admin-pwd').value='';
+  document.getElementById('login-error').style.display='none';
+  openModal('login-overlay');
+  setTimeout(()=>document.getElementById('admin-pwd').focus(),100);
+}
+
+function checkAdminPassword(){
+  const pwd=document.getElementById('admin-pwd').value;
+  if(pwd==='RECORDATI@O/rlportal'){
+    isAdmin=true;
+    document.body.classList.add('admin-mode');
+    closeModal('login-overlay');
+    openAdmin();
+    renderFolders();
+    if(currentFolderId)renderCards();
+  } else {
+    document.getElementById('login-error').style.display='block';
+    showToast("Mot de passe incorrect.","danger");
+  }
+}
+
+function openAdmin(){
+  document.getElementById('config-url').value=getSupabaseURL();
+  document.getElementById('config-key').value=getSupabaseKey();
+  renderAdminList();
+  openModal('admin-overlay');
+}
+
+function closeAdmin(){
+  closeModal('admin-overlay');
+}
+
+function switchTab(name){
+  document.querySelectorAll('#admin-tabs .tab-btn').forEach((b,i)=>{
+    const names=['docs','folders','config'];
+    b.classList.toggle('active',names[i]===name);
+  });
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+function renderAdminList(){
+  const dl=document.getElementById('admin-docs-list');
+  if(!dl)return;
+  if(documents.length===0){
+    dl.innerHTML='<div class="empty-state"><i class="ti ti-file-off"></i><p>Aucun document.</p></div>';
+  } else {
+    dl.innerHTML=documents.map(doc=>{
+      const folder=folders.find(f=>f.id===doc.folder_id);
+      const folderOpts=`<option value="">— Général —</option>`+
+        folders.map(f=>`<option value="${esc(f.id)}" ${doc.folder_id===f.id?'selected':''}>${esc(f.name)}</option>`).join('');
+      return`<div class="admin-list-item">
+        <span class="admin-item-code">${esc(doc.code||'')}</span>
+        <span class="admin-item-title">${esc(doc.title||'Sans titre')}</span>
+        <span class="admin-folder-pill">${esc(folder?folder.name:'Général')}</span>
+        <span class="admin-size">${formatSize(doc.size)}</span>
+        <select class="admin-folder-select" onchange="reassignFolder('${esc(doc.id)}',this.value)">${folderOpts}</select>
+        <div class="admin-item-actions">
+          <button class="btn-icon" onclick="openRenameDocModal('${esc(doc.id)}')" title="Renommer"><i class="ti ti-pencil"></i></button>
+          <button class="btn-icon danger" onclick="confirmDelete('${esc(doc.id)}')" title="Supprimer"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  const fl=document.getElementById('admin-folders-list');
+  if(!fl)return;
+  if(folders.length===0){
+    fl.innerHTML='<div class="empty-state"><i class="ti ti-folder-off"></i><p>Aucun dossier.</p></div>';
+  } else {
+    fl.innerHTML=folders.map(f=>{
+      const count=documents.filter(d=>d.folder_id===f.id).length;
+      return`<div class="admin-list-item">
+        <span class="admin-item-code">${esc(f.code||'')}</span>
+        <span class="admin-item-title">${esc(f.name||'Sans nom')}</span>
+        <span style="width:18px;height:18px;border-radius:50%;background:${esc(f.color||'#C8102E')};display:inline-block;flex-shrink:0"></span>
+        <span class="admin-size">${count} doc(s)</span>
+        <div class="admin-item-actions">
+          <button class="btn-icon" onclick="openRenameFolderModal('${esc(f.id)}')" title="Renommer"><i class="ti ti-pencil"></i></button>
+          <button class="btn-icon danger" onclick="confirmDeleteFolder('${esc(f.id)}')" title="Supprimer"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ===================== FOLDER CRUD =====================
+function openCreateFolderModal(){
+  selectedColor=FOLDER_COLORS[0];
+  selectedIcon=FOLDER_ICONS[0];
+  document.getElementById('create-folder-name').value='';
+  const sw=document.getElementById('color-swatches');
+  sw.innerHTML=FOLDER_COLORS.map(c=>`<div class="color-swatch${c===selectedColor?' selected':''}" style="background:${c}" onclick="selectColor('${c}')"></div>`).join('');
+  const ic=document.getElementById('icon-options');
+  ic.innerHTML=FOLDER_ICONS.map(i=>`<div class="icon-option${i===selectedIcon?' selected':''}" onclick="selectIcon('${i}')"><i class="ti ${i}"></i></div>`).join('');
+  openModal('create-folder-overlay');
+  setTimeout(()=>document.getElementById('create-folder-name').focus(),100);
+}
+
+function selectColor(c){
+  selectedColor=c;
+  document.querySelectorAll('#color-swatches .color-swatch').forEach(el=>{
+    el.classList.remove('selected');
+    if(el.getAttribute('onclick')===`selectColor('${c}')`)el.classList.add('selected');
+  });
+}
+function hexToRgb(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return`rgb(${r}, ${g}, ${b})`;
+}
+function selectIcon(i){
+  selectedIcon=i;
+  document.querySelectorAll('#icon-options .icon-option').forEach(el=>{
+    el.classList.toggle('selected',el.getAttribute('onclick')===`selectIcon('${i}')`);
+  });
+}
+
+async function submitCreateFolder(){
+  const name=document.getElementById('create-folder-name').value.trim();
+  if(!name){showToast("Veuillez saisir un nom.","danger");return;}
+  await createFolder({name,code:generateFolderCode(),color:selectedColor,icon:selectedIcon});
+  closeModal('create-folder-overlay');
+}
+
+async function createFolder(data){
+  const folder={id:crypto.randomUUID(),...data,created_at:new Date().toISOString()};
+  await saveFolderInsert(folder);
+  await loadFolders();
+  renderFolders();
+  renderAdminList();
+  showToast("Dossier créé.","success");
+}
+
+function openRenameFolderModal(id){
+  pendingRenameFolderId=id;
+  const f=folders.find(x=>x.id===id);
+  document.getElementById('rename-folder-input').value=f?f.name:'';
+  openModal('rename-folder-overlay');
+  setTimeout(()=>document.getElementById('rename-folder-input').focus(),100);
+}
+
+async function submitRenameFolder(){
+  const newName=document.getElementById('rename-folder-input').value.trim();
+  if(!newName||!pendingRenameFolderId)return;
+  await renameFolderDB(pendingRenameFolderId,newName);
+  closeModal('rename-folder-overlay');
+}
+
+async function renameFolderDB(id,newName){
+  await saveFolderUpdate(id,{name:newName});
+  await loadFolders();
+  renderFolders();
+  renderAdminList();
+  showToast("Dossier renommé.","success");
+}
+
+function confirmDeleteFolder(id){
+  pendingDeleteFolderId=id;
+  deleteDocsAlso=true;
+  document.getElementById('delete-docs-also').checked=true;
+  openModal('delete-folder-overlay');
+}
+
+async function executeDeleteFolder(){
+  const folder=folders.find(f=>f.id===pendingDeleteFolderId);
+  if(!folder)return;
+  if(deleteDocsAlso){
+    for(const doc of documents.filter(d=>d.folder_id===folder.id))await deleteDocumentDB(doc.id);
+  } else {
+    for(const doc of documents.filter(d=>d.folder_id===folder.id))await saveDocumentUpdate(doc.id,{folder_id:null});
+  }
+  await deleteFolderDB(folder.id);
+  await loadFolders();
+  await loadDocuments();
+  renderFolders();
+  renderAdminList();
+  closeModal('delete-folder-overlay');
+  if(currentFolderId===pendingDeleteFolderId)closeFolder();
+  showToast("Dossier supprimé.","danger");
+}
+
+// ===================== DOC CRUD =====================
+function openRenameDocModal(id){
+  pendingRenameDocId=id;
+  const doc=documents.find(x=>x.id===id);
+  document.getElementById('rename-doc-input').value=doc?doc.title:'';
+  openModal('rename-doc-overlay');
+  setTimeout(()=>document.getElementById('rename-doc-input').focus(),100);
+}
+
+async function submitRenameDoc(){
+  const newTitle=document.getElementById('rename-doc-input').value.trim();
+  if(!newTitle||!pendingRenameDocId)return;
+  await renameDocDB(pendingRenameDocId,newTitle);
+  closeModal('rename-doc-overlay');
+}
+
+async function renameDocDB(id,newTitle){
+  await saveDocumentUpdate(id,{title:newTitle});
+  await loadDocuments();
+  renderCards();
+  renderAdminList();
+  showToast("Document renommé.","success");
+}
+
+function confirmDelete(id){
+  pendingDeleteId=id;
+  openModal('delete-doc-overlay');
+}
+
+async function executeDelete(){
+  if(!pendingDeleteId)return;
+  await deleteDocumentDB(pendingDeleteId);
+  await loadDocuments();
+  renderCards();
+  renderAdminList();
+  closeModal('delete-doc-overlay');
+  showToast("Document supprimé.","danger");
+}
+
+async function reassignFolder(docId,newFolderId){
+  await saveDocumentUpdate(docId,{folder_id:newFolderId||null});
+  await loadDocuments();
+  renderAdminList();
+  showToast("Document déplacé.","info");
+}
+
+// ===================== UPLOAD =====================
+function openUploadModal(){
+  uploadQueue=[];
+  selectedFolderId=currentFolderId||null;
+  document.getElementById('file-input').value='';
+  renderQueue();
+  const sel=document.getElementById('upload-folder-select');
+  sel.innerHTML='<option value="">— Documents généraux —</option>'+
+    folders.map(f=>`<option value="${esc(f.id)}" ${selectedFolderId===f.id?'selected':''}>${esc(f.name)}</option>`).join('');
+  openModal('upload-overlay');
+}
+
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag-over');
+  handleFileInput(e.dataTransfer.files);
+}
+
+function handleFileInput(files){
+  Array.from(files).forEach(file=>{
+    if(file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf')){
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        const dataUrl=ev.target.result;
+        const base64=dataUrl.replace(/^data:application\/pdf;base64,/,'');
+        uploadQueue.push({name:file.name,size:file.size,base64});
+        renderQueue();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+
+function renderQueue(){
+  const qEl=document.getElementById('upload-queue');
+  qEl.innerHTML=uploadQueue.map((f,i)=>`<div class="queue-item">
+    <i class="ti ti-file-type-pdf"></i>
+    <span class="queue-item-name">${esc(f.name)}</span>
+    <span class="queue-item-size">${formatSize(f.size)}</span>
+    <button class="queue-remove" onclick="removeFromQueue(${i})"><i class="ti ti-x"></i></button>
+  </div>`).join('');
+  document.getElementById('btn-confirm-upload').disabled=uploadQueue.length===0;
+}
+
+function removeFromQueue(i){
+  uploadQueue.splice(i,1);
+  renderQueue();
+}
+
+// ===================== IMPRESSION QR CODE =====================
+let currentPrintData={title:'',code:'',url:''};
+
+function printQR(id, type){
+  let title='', code='', url='';
+  if(type==='doc'){
+    const doc=documents.find(d=>d.id===id);
+    if(!doc)return;
+    title=doc.title||'Sans titre';
+    code=doc.code||'';
+    url=buildViewerURL(doc.code||doc.id);
+  } else {
+    const folder=folders.find(f=>f.id===id);
+    if(!folder)return;
+    title=folder.name||'Sans nom';
+    code=folder.code||'';
+    url=buildFolderURL(folder.code||folder.id);
+  }
+  currentPrintData={title,code,url};
+  document.getElementById('qr-print-title').textContent=title;
+  document.getElementById('qr-print-code').textContent=code?'Code : '+code:'';
+  // Générer le QR dans la modal
+  const canvas=document.getElementById('qr-print-canvas');
+  canvas.innerHTML='';
+  try{
+    new QRCode(canvas,{text:url,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});
+  }catch(e){}
+  document.getElementById('qr-print-overlay').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+
+function closeQRPrint(){
+  document.getElementById('qr-print-overlay').classList.remove('active');
+  if(!document.querySelector('.overlay.active'))document.body.style.overflow='';
+}
+
+function doPrint(){
+  const {title,code,url}=currentPrintData;
+  // Préparer la feuille d'impression
+  const sheet=document.getElementById('qr-print-sheet');
+  // Récupérer l'image QR depuis le canvas de la modal
+  const qrCanvas=document.querySelector('#qr-print-canvas canvas');
+  const qrImg=qrCanvas?qrCanvas.toDataURL('image/png'):'';
+  sheet.innerHTML=`
+    <img src="https://opaliarecordati.com/wp-content/uploads/2021/03/logo-opalia.png"
+         style="height:48px;object-fit:contain;margin-bottom:8px"
+         onerror="this.style.display='none'"/>
+    <h2 style="font-family:serif;font-size:1.1rem;color:#000;text-align:center;max-width:260px;margin:0">${title}</h2>
+    ${code?`<p style="font-size:.8rem;color:#555;margin:4px 0">Code : ${code}</p>`:''}
+    ${qrImg?`<img src="${qrImg}" style="width:180px;height:180px;margin:8px 0"/>`:''}
+    <p style="font-size:.7rem;color:#888;margin:0">Portail FDS · Opalia Recordati</p>
+  `;
+  window.print();
+}
+
+// ===================== UPLOAD AVEC CODE UNIQUE GARANTI =====================
+// Pour chaque fichier, on recharge la base AVANT de générer le code
+// → impossible d'avoir deux documents avec le même code RL-XXX
+async function confirmUpload(){
+  const folderSel=document.getElementById('upload-folder-select').value;
+  const btn=document.getElementById('btn-confirm-upload');
+  btn.disabled=true;
+  btn.textContent='Envoi en cours…';
+  let count=0;
+
+  for(const file of uploadQueue){
+    // Recharger les codes existants depuis Supabase avant chaque insertion
+    const code=await generateUniqueCode(file.name);
+
+    const doc={
+      id:crypto.randomUUID(),
+      code:code,
+      title:file.name.replace(/\.pdf$/i,'').replace(/[-_]/g,' '),
+      base64:file.base64,
+      size:file.size,
+      pills:[{label:'Document',color:'blue'}],
+      folder_id:folderSel||null,
+      created_at:new Date().toISOString()
+    };
+    await saveDocumentInsert(doc);
+    count++;
+  }
+
+  await loadDocuments();
+  renderCards();
+  renderAdminList();
+  btn.disabled=false;
+  btn.textContent='Ajouter les documents';
+  closeModal('upload-overlay');
+  showToast(count+" document(s) ajouté(s) avec codes uniques.","success");
+}
+
+// ===================== CONFIG =====================
+function saveConfig(){
+  const url=document.getElementById('config-url').value.trim();
+  const key=document.getElementById('config-key').value.trim();
+  localStorage.setItem('fds_supabase_url',url);
+  localStorage.setItem('fds_supabase_key',key);
+  showToast("Configuration mise à jour. Rechargement…","success");
+  setTimeout(()=>location.reload(),1500);
+}
+
+function resetConfig(){
+  localStorage.removeItem('fds_supabase_url');
+  localStorage.removeItem('fds_supabase_key');
+  showToast("Configuration réinitialisée. Rechargement…","info");
+  setTimeout(()=>location.reload(),1500);
+}
+
+// ===================== PAGE LOAD & ROUTING =====================
+window.addEventListener('load',async()=>{
+  document.getElementById('loading-state').style.display='flex';
+  await loadFolders();
+  await loadDocuments();
+  document.getElementById('loading-state').style.display='none';
+  renderFolders();
+
+  setTimeout(()=>makeQR('qr-home-box',buildHomeURL(),100),100);
+
+  const params=new URLSearchParams(window.location.search);
+  const viewCode=params.get('view');
+  const folderCode=params.get('folder');
+  if(viewCode){
+    setTimeout(()=>{const d=documents.find(x=>x.code===viewCode);if(d)openViewer(d.id);},300);
+  } else if(folderCode){
+    setTimeout(()=>{const f=folders.find(x=>x.code===folderCode);if(f)openFolder(f.id);},300);
+  }
+});
+
+// ESC key to close modals
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    const active=document.querySelector('.overlay.active');
+    if(active&&active.id!=='viewer-overlay'&&active.id!=='admin-overlay'){
+      active.classList.remove('active');
+      if(!document.querySelector('.overlay.active'))document.body.style.overflow='';
+    }
+  }
+});
+</script>
+</body>
+</html>
