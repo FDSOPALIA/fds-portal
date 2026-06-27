@@ -1171,9 +1171,8 @@ function base64ToBlobUrl(base64){
 async function openViewer(id){
   const doc=documents.find(d=>d.id===id);
   if(!doc)return;
-  document.getElementById('viewer-title').textContent=doc.title||'';
-  document.getElementById('viewer-code').textContent=doc.code||'';
-  document.getElementById('viewer-embed').src='';
+
+  // Charger le PDF
   document.getElementById('viewer-loading').style.display='flex';
   openModal('viewer-overlay');
   const base64=doc.base64||await fetchBase64(id);
@@ -1184,19 +1183,43 @@ async function openViewer(id){
     return;
   }
   doc.base64=base64;
+
+  const isMobile=/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  if(isMobile){
+    // Sur mobile : ouvrir dans un nouvel onglet
+    // Le navigateur mobile (Chrome, Safari) affiche nativement le PDF sans téléchargement forcé
+    closeModal('viewer-overlay');
+    const blobUrl=base64ToBlobUrl(base64);
+    const win=window.open(blobUrl,'_blank');
+    if(!win){
+      // Popup bloqué : proposer le téléchargement direct
+      showToast("Autorisez les popups ou appuyez sur Télécharger.","info");
+      const a=document.createElement('a');
+      a.href=blobUrl;
+      a.download=(doc.title||'document')+".pdf";
+      a.click();
+    }
+    setTimeout(()=>URL.revokeObjectURL(blobUrl),15000);
+    return;
+  }
+
+  // Sur ordinateur : afficher dans l'iframe du viewer
+  document.getElementById('viewer-title').textContent=doc.title||'';
+  document.getElementById('viewer-code').textContent=doc.code||'';
   const blobUrl=base64ToBlobUrl(base64);
   const embed=document.getElementById('viewer-embed');
   if(embed._blobUrl)URL.revokeObjectURL(embed._blobUrl);
   embed._blobUrl=blobUrl;
-  // Affichage dans le viewer sur tous les appareils (mobile inclus), pas de téléchargement auto
   embed.src=blobUrl+"#toolbar=1&navpanes=0&view=FitH";
+
   document.getElementById('viewer-back').onclick=()=>{
     closeViewer();
     if(doc.folder_id)openFolder(doc.folder_id);else closeFolder();
   };
   document.getElementById('viewer-download').onclick=()=>{
     const a=document.createElement('a');
-    a.href=document.getElementById('viewer-embed')._blobUrl||("data:application/pdf;base64,"+base64);
+    a.href=embed._blobUrl||("data:application/pdf;base64,"+base64);
     a.download=(doc.title||'document')+".pdf";
     a.click();
   };
