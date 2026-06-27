@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -256,6 +258,8 @@ body{font-family:var(--font-body);color:#333;background:#f7f7f7;min-height:100vh
   background:rgba(0,0,0,0.55);overflow-y:auto;
 }
 .overlay.active{display:flex}
+/* FIX: le panneau admin doit rester en dessous des petites modales (upload, suppression, renommage, creation dossier)
+   sinon ces modales s'ouvrent mais restent visuellement cachees derriere le panneau admin */
 #admin-overlay{z-index:150;}
 .modal-box{
   background:#fff;border-radius:16px;padding:32px;
@@ -435,6 +439,15 @@ body{font-family:var(--font-body);color:#333;background:#f7f7f7;min-height:100vh
 }
 .btn-reset:hover{background:#eee;border-color:#ccc}
 
+/* BOUTON RETOUR DANS LA BARRE DE RECHERCHE */
+#btn-back-top{
+  display:none;align-items:center;gap:6px;
+  background:none;border:1.5px solid #ddd;border-radius:8px;
+  padding:8px 14px;font-family:var(--font-body);font-size:.85rem;font-weight:500;
+  color:#555;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0;
+}
+#btn-back-top:hover{border-color:var(--red);color:var(--red)}
+
 /* TOAST */
 #toast-container{
   position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
@@ -496,45 +509,6 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
 .footer-copy a{font-size:.75rem;color:#888;text-decoration:none}
 .footer-copy a:hover{color:#ccc;text-decoration:underline}
 
-/* BOUTON IMPRESSION QR */
-.btn-print-qr{
-  background:#f5f5f5;color:#555;border:1.5px solid #ddd;border-radius:8px;
-  padding:6px 10px;font-family:var(--font-body);font-size:.78rem;font-weight:500;
-  cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;
-  white-space:nowrap;
-}
-.btn-print-qr:hover{background:#eee;border-color:#bbb;color:#333}
-
-/* FENÊTRE D'IMPRESSION QR */
-#qr-print-overlay{
-  display:none;position:fixed;inset:0;z-index:500;
-  background:rgba(0,0,0,0.6);align-items:center;justify-content:center;
-}
-#qr-print-overlay.active{display:flex}
-#qr-print-box{
-  background:#fff;border-radius:16px;padding:32px;
-  max-width:340px;width:calc(100% - 48px);
-  box-shadow:0 20px 60px rgba(0,0,0,0.3);
-  display:flex;flex-direction:column;align-items:center;gap:16px;
-  text-align:center;
-}
-#qr-print-title{font-family:var(--font-head);font-size:1rem;color:#1a1a1a;font-weight:600;line-height:1.3}
-#qr-print-code{font-size:.75rem;color:#888;margin-top:-8px}
-#qr-print-canvas{background:#f9f9f9;border-radius:8px;padding:12px}
-.qr-print-actions{display:flex;gap:10px;width:100%;margin-top:4px}
-
-/* STYLE IMPRESSION NAVIGATEUR */
-@media print{
-  body > *{display:none!important}
-  #qr-print-sheet{
-    display:flex!important;flex-direction:column;align-items:center;
-    justify-content:center;min-height:100vh;gap:16px;font-family:sans-serif;
-  }
-  #qr-print-sheet h2{font-size:1.1rem;color:#000;text-align:center;max-width:280px}
-  #qr-print-sheet p{font-size:.8rem;color:#555}
-}
-#qr-print-sheet{display:none}
-
 @media(max-width:640px){
   #folders-grid{grid-template-columns:1fr}
   #cards-grid{grid-template-columns:1fr}
@@ -589,6 +563,9 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
 
   <!-- SEARCH TOOLBAR -->
   <div id="search-toolbar">
+    <button id="btn-back-top" onclick="closeFolder()">
+      <i class="ti ti-arrow-left"></i> Retour aux dossiers
+    </button>
     <div class="search-box">
       <i class="ti ti-search"></i>
       <input type="text" id="search-input" placeholder="Rechercher une fiche produit par titre ou code…" oninput="handleSearch()"/>
@@ -801,22 +778,6 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
   </div>
 </div>
 
-<!-- QR PRINT OVERLAY -->
-<div id="qr-print-overlay" onclick="if(event.target===this)closeQRPrint()">
-  <div id="qr-print-box">
-    <div id="qr-print-title"></div>
-    <div id="qr-print-code"></div>
-    <div id="qr-print-canvas"></div>
-    <div class="qr-print-actions">
-      <button class="btn-secondary" onclick="closeQRPrint()">Fermer</button>
-      <button class="btn-primary" onclick="doPrint()"><i class="ti ti-printer"></i> Imprimer</button>
-    </div>
-  </div>
-</div>
-
-<!-- FEUILLE D'IMPRESSION (cachée, visible uniquement à l'impression) -->
-<div id="qr-print-sheet"></div>
-
 <!-- PDF VIEWER -->
 <div class="overlay" id="viewer-overlay">
   <div id="viewer-topbar">
@@ -985,28 +946,12 @@ function formatSize(bytes){
   if(bytes<1048576)return(bytes/1024).toFixed(1)+'KB';
   return(bytes/1048576).toFixed(1)+'MB';
 }
-
-// ===================== GÉNÉRATION DE CODE DEPUIS LE NOM DU FICHIER =====================
-// Le code = nom du fichier sans extension (ex: RL556.pdf → RL556, Acide_chlorhydrique.pdf → Acide chlorhydrique)
-// Si le code existe déjà, on ajoute un suffixe -2, -3, etc.
-async function generateUniqueCode(fileName){
-  await loadDocuments(); // Synchronise avec la base avant de générer
-  // Extraire le nom sans extension et nettoyer
-  let base = (fileName||'document')
-    .replace(/\.pdf$/i,'')       // enlever .pdf
-    .replace(/[-_]/g,' ')        // remplacer tirets/underscores par espaces
-    .trim();
-  // Vérifier unicité, ajouter suffixe si doublon
-  const existing = documents.map(d=>(d.code||'').toLowerCase());
-  let code = base;
-  let n = 2;
-  while(existing.includes(code.toLowerCase())){
-    code = base + ' ' + n;
-    n++;
-  }
-  return code;
+function generateCode(){
+  const existing=documents.map(d=>d.code).filter(c=>c&&c.startsWith('RL-'));
+  let n=1;
+  while(existing.includes('RL-'+String(n).padStart(3,'0')))n++;
+  return'RL-'+String(n).padStart(3,'0');
 }
-
 function generateFolderCode(){
   const existing=folders.map(f=>f.code).filter(c=>c&&c.startsWith('RL-F'));
   let n=1;
@@ -1032,6 +977,7 @@ function showToast(msg,type){
 function openModal(id){document.getElementById(id).classList.add('active');document.body.style.overflow='hidden';}
 function closeModal(id){
   document.getElementById(id).classList.remove('active');
+  // Only restore scroll if no other modals are open
   if(!document.querySelector('.overlay.active'))document.body.style.overflow='';
 }
 function overlayClickClose(e,id){if(e.target===document.getElementById(id))closeModal(id);}
@@ -1107,6 +1053,7 @@ function renderFolders(){
     </div>`;
   }).join('');
 
+  // Render QR codes after DOM update
   setTimeout(()=>{
     filtered.forEach(f=>{
       makeQR('qr-folder-'+f.id,buildFolderURL(f.code||f.id),90);
@@ -1132,8 +1079,6 @@ function closeFolder(){
   document.getElementById('breadcrumb-bar').style.display='none';
   document.getElementById('docs-section').style.display='none';
   document.getElementById('folders-section').style.display='';
-  // Remonter en haut de page pour voir les dossiers
-  window.scrollTo({top:0,behavior:'smooth'});
   renderFolders();
 }
 
@@ -1146,8 +1091,7 @@ function renderCards(){
   let filtered=documents.filter(d=>d.folder_id===currentFolderId);
   if(q){
     filtered=filtered.filter(d=>
-      (d.title||'').toLowerCase().includes(d.code||'').toLowerCase().includes(q)||
-      (d.title||'').toLowerCase().includes(q)
+      (d.title||'').toLowerCase().includes(q)||(d.code||'').toLowerCase().includes(q)
     );
   }
 
@@ -1181,12 +1125,10 @@ function renderCards(){
           <i class="ti ti-download"></i> Télécharger
         </button>
       </div>
-      <button class="btn-print-qr" onclick="printQR('${esc(doc.id)}','doc')">
-        <i class="ti ti-printer"></i> Imprimer QR
-      </button>
     </div>`;
   }).join('');
 
+  // Show admin delete buttons if admin
   if(isAdmin){
     grid.querySelectorAll('.admin-only').forEach(el=>el.style.display='flex');
   }
@@ -1202,11 +1144,14 @@ function renderCards(){
 
 function updateDocCount(){
   const el=document.getElementById('doc-count');
+  const btnBack=document.getElementById('btn-back-top');
   if(currentFolderId){
     const count=documents.filter(d=>d.folder_id===currentFolderId).length;
     el.textContent=count+' fiche(s) disponible(s)';
+    if(btnBack)btnBack.style.display='flex';
   } else {
     el.textContent=documents.length+' fiche(s) disponible(s)';
+    if(btnBack)btnBack.style.display='none';
   }
 }
 
@@ -1216,16 +1161,13 @@ function handleSearch(){
   else renderFolders();
 }
 
-// ===================== HELPER : base64 → Blob URL =====================
+// ===================== VIEWER =====================
 function base64ToBlobUrl(base64){
-  const byteChars=atob(base64);
-  const byteArr=new Uint8Array(byteChars.length);
-  for(let i=0;i<byteChars.length;i++) byteArr[i]=byteChars.charCodeAt(i);
-  const blob=new Blob([byteArr],{type:'application/pdf'});
-  return URL.createObjectURL(blob);
+  const byteChars=atob(base64);const byteArr=new Uint8Array(byteChars.length);
+  for(let i=0;i<byteChars.length;i++)byteArr[i]=byteChars.charCodeAt(i);
+  return URL.createObjectURL(new Blob([byteArr],{type:'application/pdf'}));
 }
 
-// ===================== VIEWER =====================
 async function openViewer(id){
   const doc=documents.find(d=>d.id===id);
   if(!doc)return;
@@ -1234,38 +1176,27 @@ async function openViewer(id){
   document.getElementById('viewer-embed').src='';
   document.getElementById('viewer-loading').style.display='flex';
   openModal('viewer-overlay');
-
   const base64=doc.base64||await fetchBase64(id);
   document.getElementById('viewer-loading').style.display='none';
-
   if(!base64){
     showToast("Impossible de charger le document.","danger");
     closeModal('viewer-overlay');
     return;
   }
   doc.base64=base64;
-
   const blobUrl=base64ToBlobUrl(base64);
   const embed=document.getElementById('viewer-embed');
-
-  if(embed._blobUrl){ URL.revokeObjectURL(embed._blobUrl); }
+  if(embed._blobUrl)URL.revokeObjectURL(embed._blobUrl);
   embed._blobUrl=blobUrl;
-
-  if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
-    window.open(blobUrl,'_blank');
-    closeViewer();
-  } else {
-    embed.src=blobUrl+"#toolbar=1&navpanes=0&view=FitH";
-  }
-
+  // Affichage dans le viewer sur tous les appareils (mobile inclus), pas de téléchargement auto
+  embed.src=blobUrl+"#toolbar=1&navpanes=0&view=FitH";
   document.getElementById('viewer-back').onclick=()=>{
     closeViewer();
     if(doc.folder_id)openFolder(doc.folder_id);else closeFolder();
   };
-
   document.getElementById('viewer-download').onclick=()=>{
     const a=document.createElement('a');
-    a.href=blobUrl;
+    a.href=document.getElementById('viewer-embed')._blobUrl||("data:application/pdf;base64,"+base64);
     a.download=(doc.title||'document')+".pdf";
     a.click();
   };
@@ -1273,12 +1204,8 @@ async function openViewer(id){
 
 function closeViewer(){
   const embed=document.getElementById('viewer-embed');
-  if(embed._blobUrl){
-    URL.revokeObjectURL(embed._blobUrl);
-    embed._blobUrl=null;
-  }
-  embed.src='';
-  closeModal('viewer-overlay');
+  if(embed._blobUrl){URL.revokeObjectURL(embed._blobUrl);embed._blobUrl=null;}
+  embed.src='';closeModal('viewer-overlay');
 }
 
 async function downloadDoc(id){
@@ -1287,12 +1214,10 @@ async function downloadDoc(id){
   const base64=doc.base64||await fetchBase64(id);
   if(!base64){showToast("Impossible de charger le document.","danger");return;}
   doc.base64=base64;
-  const blobUrl=base64ToBlobUrl(base64);
   const a=document.createElement('a');
-  a.href=blobUrl;
+  a.href="data:application/pdf;base64,"+base64;
   a.download=(doc.title||'document')+".pdf";
   a.click();
-  setTimeout(()=>URL.revokeObjectURL(blobUrl),5000);
 }
 
 // ===================== ADMIN =====================
@@ -1324,6 +1249,7 @@ function checkAdminPassword(){
 }
 
 function openAdmin(){
+  // Pre-fill config
   document.getElementById('config-url').value=getSupabaseURL();
   document.getElementById('config-key').value=getSupabaseKey();
   renderAdminList();
@@ -1344,6 +1270,7 @@ function switchTab(name){
 }
 
 function renderAdminList(){
+  // DOCS LIST
   const dl=document.getElementById('admin-docs-list');
   if(!dl)return;
   if(documents.length===0){
@@ -1366,6 +1293,7 @@ function renderAdminList(){
       </div>`;
     }).join('');
   }
+  // FOLDERS LIST
   const fl=document.getElementById('admin-folders-list');
   if(!fl)return;
   if(folders.length===0){
@@ -1392,8 +1320,10 @@ function openCreateFolderModal(){
   selectedColor=FOLDER_COLORS[0];
   selectedIcon=FOLDER_ICONS[0];
   document.getElementById('create-folder-name').value='';
+  // Build swatches
   const sw=document.getElementById('color-swatches');
   sw.innerHTML=FOLDER_COLORS.map(c=>`<div class="color-swatch${c===selectedColor?' selected':''}" style="background:${c}" onclick="selectColor('${c}')"></div>`).join('');
+  // Build icons
   const ic=document.getElementById('icon-options');
   ic.innerHTML=FOLDER_ICONS.map(i=>`<div class="icon-option${i===selectedIcon?' selected':''}" onclick="selectIcon('${i}')"><i class="ti ${i}"></i></div>`).join('');
   openModal('create-folder-overlay');
@@ -1403,7 +1333,12 @@ function openCreateFolderModal(){
 function selectColor(c){
   selectedColor=c;
   document.querySelectorAll('#color-swatches .color-swatch').forEach(el=>{
+    el.classList.toggle('selected',el.style.background===c||el.style.backgroundColor===c||getComputedStyle(el).backgroundColor===hexToRgb(c));
+  });
+  document.querySelectorAll('#color-swatches .color-swatch').forEach(el=>{
     el.classList.remove('selected');
+  });
+  document.querySelectorAll('#color-swatches .color-swatch').forEach(el=>{
     if(el.getAttribute('onclick')===`selectColor('${c}')`)el.classList.add('selected');
   });
 }
@@ -1534,6 +1469,7 @@ function openUploadModal(){
   selectedFolderId=currentFolderId||null;
   document.getElementById('file-input').value='';
   renderQueue();
+  // Populate folder select
   const sel=document.getElementById('upload-folder-select');
   sel.innerHTML='<option value="">— Documents généraux —</option>'+
     folders.map(f=>`<option value="${esc(f.id)}" ${selectedFolderId===f.id?'selected':''}>${esc(f.name)}</option>`).join('');
@@ -1577,78 +1513,13 @@ function removeFromQueue(i){
   renderQueue();
 }
 
-// ===================== IMPRESSION QR CODE =====================
-let currentPrintData={title:'',code:'',url:''};
-
-function printQR(id, type){
-  let title='', code='', url='';
-  if(type==='doc'){
-    const doc=documents.find(d=>d.id===id);
-    if(!doc)return;
-    title=doc.title||'Sans titre';
-    code=doc.code||'';
-    url=buildViewerURL(doc.code||doc.id);
-  } else {
-    const folder=folders.find(f=>f.id===id);
-    if(!folder)return;
-    title=folder.name||'Sans nom';
-    code=folder.code||'';
-    url=buildFolderURL(folder.code||folder.id);
-  }
-  currentPrintData={title,code,url};
-  document.getElementById('qr-print-title').textContent=title;
-  document.getElementById('qr-print-code').textContent=code?'Code : '+code:'';
-  // Générer le QR dans la modal
-  const canvas=document.getElementById('qr-print-canvas');
-  canvas.innerHTML='';
-  try{
-    new QRCode(canvas,{text:url,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});
-  }catch(e){}
-  document.getElementById('qr-print-overlay').classList.add('active');
-  document.body.style.overflow='hidden';
-}
-
-function closeQRPrint(){
-  document.getElementById('qr-print-overlay').classList.remove('active');
-  if(!document.querySelector('.overlay.active'))document.body.style.overflow='';
-}
-
-function doPrint(){
-  const {title,code,url}=currentPrintData;
-  // Préparer la feuille d'impression
-  const sheet=document.getElementById('qr-print-sheet');
-  // Récupérer l'image QR depuis le canvas de la modal
-  const qrCanvas=document.querySelector('#qr-print-canvas canvas');
-  const qrImg=qrCanvas?qrCanvas.toDataURL('image/png'):'';
-  sheet.innerHTML=`
-    <img src="https://opaliarecordati.com/wp-content/uploads/2021/03/logo-opalia.png"
-         style="height:48px;object-fit:contain;margin-bottom:8px"
-         onerror="this.style.display='none'"/>
-    <h2 style="font-family:serif;font-size:1.1rem;color:#000;text-align:center;max-width:260px;margin:0">${title}</h2>
-    ${code?`<p style="font-size:.8rem;color:#555;margin:4px 0">Code : ${code}</p>`:''}
-    ${qrImg?`<img src="${qrImg}" style="width:180px;height:180px;margin:8px 0"/>`:''}
-    <p style="font-size:.7rem;color:#888;margin:0">Portail FDS · Opalia Recordati</p>
-  `;
-  window.print();
-}
-
-// ===================== UPLOAD AVEC CODE UNIQUE GARANTI =====================
-// Pour chaque fichier, on recharge la base AVANT de générer le code
-// → impossible d'avoir deux documents avec le même code RL-XXX
 async function confirmUpload(){
   const folderSel=document.getElementById('upload-folder-select').value;
-  const btn=document.getElementById('btn-confirm-upload');
-  btn.disabled=true;
-  btn.textContent='Envoi en cours…';
   let count=0;
-
   for(const file of uploadQueue){
-    // Recharger les codes existants depuis Supabase avant chaque insertion
-    const code=await generateUniqueCode(file.name);
-
     const doc={
       id:crypto.randomUUID(),
-      code:code,
+      code:generateCode(),
       title:file.name.replace(/\.pdf$/i,'').replace(/[-_]/g,' '),
       base64:file.base64,
       size:file.size,
@@ -1659,14 +1530,11 @@ async function confirmUpload(){
     await saveDocumentInsert(doc);
     count++;
   }
-
   await loadDocuments();
   renderCards();
   renderAdminList();
-  btn.disabled=false;
-  btn.textContent='Ajouter les documents';
   closeModal('upload-overlay');
-  showToast(count+" document(s) ajouté(s) avec codes uniques.","success");
+  showToast(count+" document(s) ajouté(s).","success");
 }
 
 // ===================== CONFIG =====================
@@ -1694,6 +1562,7 @@ window.addEventListener('load',async()=>{
   document.getElementById('loading-state').style.display='none';
   renderFolders();
 
+  // Home QR
   setTimeout(()=>makeQR('qr-home-box',buildHomeURL(),100),100);
 
   const params=new URLSearchParams(window.location.search);
