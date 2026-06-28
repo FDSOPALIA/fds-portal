@@ -465,6 +465,44 @@ body{font-family:var(--font-body);color:#333;background:#f7f7f7;min-height:100vh
 @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
 @keyframes fadeOut{from{opacity:1}to{opacity:0}}
 
+/* BOUTON IMPRESSION QR */
+.btn-print-qr{
+  background:#f5f5f5;color:#555;border:1.5px solid #ddd;border-radius:8px;
+  padding:6px 10px;font-family:var(--font-body);font-size:.78rem;font-weight:500;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;
+  white-space:nowrap;margin-top:4px;
+}
+.btn-print-qr:hover{background:#eee;border-color:#bbb;color:#333}
+
+/* FENÊTRE D'IMPRESSION QR */
+#qr-print-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,0.6);align-items:center;justify-content:center;
+}
+#qr-print-overlay.active{display:flex}
+#qr-print-box{
+  background:#fff;border-radius:16px;padding:32px;
+  max-width:340px;width:calc(100% - 48px);
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;
+}
+#qr-print-title{font-family:var(--font-head);font-size:1rem;color:#1a1a1a;font-weight:600;line-height:1.3}
+#qr-print-code{font-size:.75rem;color:#888;margin-top:-8px}
+#qr-print-canvas{background:#f9f9f9;border-radius:8px;padding:12px}
+.qr-print-actions{display:flex;gap:10px;width:100%;margin-top:4px}
+
+/* STYLE IMPRESSION NAVIGATEUR */
+@media print{
+  body > *{display:none!important}
+  #qr-print-sheet{
+    display:flex!important;flex-direction:column;align-items:center;
+    justify-content:center;min-height:100vh;gap:16px;font-family:sans-serif;
+  }
+  #qr-print-sheet h2{font-size:1.1rem;color:#000;text-align:center;max-width:280px}
+  #qr-print-sheet p{font-size:.8rem;color:#555}
+}
+#qr-print-sheet{display:none}
+
 /* FOOTER */
 footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
 .footer-inner{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px}
@@ -1125,6 +1163,9 @@ function renderCards(){
           <i class="ti ti-download"></i> Télécharger
         </button>
       </div>
+      <button class="btn-print-qr" onclick="printQR('${esc(doc.id)}','doc')">
+        <i class="ti ti-printer"></i> Imprimer QR
+      </button>
     </div>`;
   }).join('');
 
@@ -1534,6 +1575,38 @@ function renderQueue(){
 function removeFromQueue(i){
   uploadQueue.splice(i,1);
   renderQueue();
+}
+
+// ===================== IMPRESSION QR CODE =====================
+let currentPrintData={title:'',code:'',url:''};
+function printQR(id,type){
+  let title='',code='',url='';
+  if(type==='doc'){const doc=documents.find(d=>d.id===id);if(!doc)return;title=doc.title||'Sans titre';code=doc.code||'';url=buildViewerURL(doc.code||doc.id);}
+  else{const folder=folders.find(f=>f.id===id);if(!folder)return;title=folder.name||'Sans nom';code=folder.code||'';url=buildFolderURL(folder.code||folder.id);}
+  currentPrintData={title,code,url};
+  document.getElementById('qr-print-title').textContent=title;
+  document.getElementById('qr-print-code').textContent=code?'Code : '+code:'';
+  const canvas=document.getElementById('qr-print-canvas');canvas.innerHTML='';
+  try{new QRCode(canvas,{text:url,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});}catch(e){}
+  document.getElementById('qr-print-overlay').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function closeQRPrint(){
+  document.getElementById('qr-print-overlay').classList.remove('active');
+  if(!document.querySelector('.overlay.active'))document.body.style.overflow='';
+}
+function doPrint(){
+  const {title,code}=currentPrintData;
+  const qrCanvas=document.querySelector('#qr-print-canvas canvas');
+  const qrImg=qrCanvas?qrCanvas.toDataURL('image/png'):'';
+  document.getElementById('qr-print-sheet').innerHTML=`
+    <img src="https://opaliarecordati.com/wp-content/uploads/2021/03/logo-opalia.png"
+         style="height:48px;object-fit:contain;margin-bottom:8px" onerror="this.style.display='none'"/>
+    <h2 style="font-family:serif;font-size:1.1rem;color:#000;text-align:center;max-width:260px;margin:0">${title}</h2>
+    ${code?`<p style="font-size:.8rem;color:#555;margin:4px 0">Code : ${code}</p>`:''}
+    ${qrImg?`<img src="${qrImg}" style="width:180px;height:180px;margin:8px 0"/>`:''}
+    <p style="font-size:.7rem;color:#888;margin:0">Portail FDS · Opalia Recordati</p>`;
+  window.print();
 }
 
 async function confirmUpload(){
