@@ -1038,14 +1038,12 @@ function closeModal(id){
 function overlayClickClose(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 
 // ===================== QR CODES =====================
-const qrCache={};
 function makeQR(containerId,url,size){
-  if(qrCache[containerId])return;
   const el=document.getElementById(containerId);
   if(!el)return;
+  if(el.childNodes.length>0)return; // déjà généré DANS CET ÉLÉMENT du DOM (pas juste "déjà vu")
   try{
     new QRCode(el,{text:url,width:size,height:size,correctLevel:QRCode.CorrectLevel.M});
-    qrCache[containerId]=true;
   }catch(e){}
 }
 
