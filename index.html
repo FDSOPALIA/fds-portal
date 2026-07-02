@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -877,6 +876,24 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
     </div>
   </div>
 </div>
+
+<!-- QR PRINT MODAL -->
+<div class="overlay" id="qr-print-overlay" onclick="overlayClickClose(event,'qr-print-overlay')">
+  <div id="qr-print-box" onclick="event.stopPropagation()">
+    <div id="qr-print-title"></div>
+    <div id="qr-print-code"></div>
+    <div id="qr-print-canvas"></div>
+    <div class="qr-print-actions">
+      <button class="btn-secondary" onclick="closeQRPrint()">Fermer</button>
+      <button class="btn-primary" onclick="doPrint()">
+        <i class="ti ti-printer"></i> Imprimer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- FEUILLE D'IMPRESSION (invisible à l'écran, visible uniquement en impression) -->
+<div id="qr-print-sheet"></div>
 
 <script>
 // ===================== SUPABASE CONFIG =====================
