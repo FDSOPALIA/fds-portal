@@ -868,6 +868,41 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
 <!-- FEUILLE D'IMPRESSION (cachée, visible uniquement à l'impression) -->
 <div id="qr-print-sheet"></div>
 
+<!-- VERSIONS MODAL -->
+<div class="overlay" id="versions-overlay" onclick="overlayClickClose(event,'versions-overlay')">
+  <div class="modal-box" style="max-width:580px" onclick="event.stopPropagation()">
+    <div class="modal-title" id="versions-modal-title">Versions du document</div>
+    <!-- Ajouter une nouvelle version -->
+    <div style="background:#f9f9f9;border-radius:10px;padding:16px;margin-bottom:16px;border:1.5px dashed #ddd">
+      <div style="font-size:.82rem;font-weight:600;color:#555;margin-bottom:10px"><i class="ti ti-plus"></i> Ajouter une nouvelle version</div>
+      <div id="version-drop-zone" style="border:2px dashed #ddd;border-radius:8px;padding:20px;text-align:center;color:#aaa;cursor:pointer;margin-bottom:10px"
+        onclick="document.getElementById('version-file-input').click()"
+        ondragover="event.preventDefault();this.style.borderColor='var(--red)'"
+        ondragleave="this.style.borderColor='#ddd'"
+        ondrop="handleVersionDrop(event)">
+        <i class="ti ti-upload" style="font-size:1.5rem;display:block;margin-bottom:6px"></i>
+        <span style="font-size:.82rem">Glissez le nouveau PDF ou cliquez pour sélectionner</span>
+      </div>
+      <input type="file" id="version-file-input" accept=".pdf" style="display:none" onchange="handleVersionFile(this.files[0])"/>
+      <div id="version-file-preview" style="display:none;align-items:center;gap:8px;padding:8px;background:#fff;border-radius:8px;margin-bottom:10px">
+        <i class="ti ti-file-type-pdf" style="color:var(--red);font-size:1.2rem"></i>
+        <span id="version-file-name" style="flex:1;font-size:.82rem;color:#333"></span>
+        <button onclick="clearVersionFile()" style="background:none;border:none;color:#ccc;cursor:pointer"><i class="ti ti-x"></i></button>
+      </div>
+      <input class="modal-input" type="text" id="version-note" placeholder="Note optionnelle (ex: Mise à jour réglementaire 2026)" style="margin-bottom:10px"/>
+      <button class="btn-primary" id="btn-save-version" onclick="saveNewVersion()" disabled style="flex:none;padding:9px 18px">
+        <i class="ti ti-device-floppy"></i> Enregistrer cette version
+      </button>
+    </div>
+    <!-- Liste des versions existantes -->
+    <div style="font-size:.82rem;font-weight:600;color:#555;margin-bottom:10px"><i class="ti ti-history"></i> Historique des versions</div>
+    <div id="versions-list" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto"></div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn-secondary" onclick="closeModal('versions-overlay')">Fermer</button>
+    </div>
+  </div>
+</div>
+
 <!-- PDF VIEWER -->
 <div class="overlay" id="viewer-overlay">
   <div id="viewer-topbar">
@@ -898,16 +933,14 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
     <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
     <button class="tab-btn" onclick="switchTab('docs')">Documents</button>
     <button class="tab-btn" onclick="switchTab('folders')">Dossiers</button>
+    <button class="tab-btn" onclick="switchTab('trash')"><i class="ti ti-trash" style="font-size:.85rem"></i> Corbeille</button>
     <button class="tab-btn" onclick="switchTab('config')">Configuration</button>
   </div>
   <div id="admin-body">
     <div class="tab-pane active" id="tab-dashboard">
-      <!-- STATS CARDS -->
       <div class="dash-grid" id="dash-stats-grid"></div>
-      <!-- TOP DOCUMENTS -->
       <div class="dash-section-title"><i class="ti ti-trophy"></i> Top 5 — Documents les plus consultés</div>
       <div class="dash-top-list" id="dash-top-list"></div>
-      <!-- ACTIVITÉ RÉCENTE -->
       <div class="dash-section-title"><i class="ti ti-clock"></i> Activité récente — Derniers ajouts</div>
       <div class="dash-recent-list" id="dash-recent-list"></div>
     </div>
@@ -917,25 +950,42 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
     <div class="tab-pane" id="tab-folders">
       <div class="admin-list" id="admin-folders-list"></div>
     </div>
+    <div class="tab-pane" id="tab-trash">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+        <button class="btn-primary" style="flex:none;padding:8px 16px;background:#555;font-size:.82rem" onclick="emptyTrash()">
+          <i class="ti ti-trash-x"></i> Vider la corbeille
+        </button>
+      </div>
+      <div class="admin-list" id="admin-trash-list"></div>
+    </div>
     <div class="tab-pane" id="tab-config">
       <div class="config-section">
-        <div class="config-warning">
-          <i class="ti ti-alert-triangle"></i>
-          <span>Ces informations sont sensibles. Ne les partagez qu'avec un administrateur de confiance.</span>
+
+        <!-- SECTION SUPABASE -->
+        <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+            <i class="ti ti-database" style="color:var(--red);font-size:1.1rem"></i>
+            <span style="font-family:var(--font-head);font-size:1rem;color:#1a1a1a;font-weight:600">Configuration Supabase</span>
+          </div>
+          <div class="config-warning">
+            <i class="ti ti-alert-triangle"></i>
+            <span>Ces informations sont sensibles. Ne les partagez qu'avec un administrateur de confiance.</span>
+          </div>
+          <div style="margin-top:14px">
+            <label class="modal-label">Supabase URL</label>
+            <input class="modal-input" type="text" id="config-url" style="margin-bottom:0"/>
+          </div>
+          <div style="margin-top:14px">
+            <label class="modal-label">Supabase API Key</label>
+            <input class="modal-input" type="text" id="config-key" style="margin-bottom:0"/>
+          </div>
+          <div class="config-btns" style="margin-top:14px">
+            <button class="btn-primary" style="flex:none;padding:10px 20px" onclick="saveConfig()">Enregistrer la configuration</button>
+            <button class="btn-reset" onclick="resetConfig()">Réinitialiser</button>
+          </div>
+          <p class="config-note" style="margin-top:8px">Après enregistrement, la page se rechargera automatiquement.</p>
         </div>
-        <div>
-          <label class="modal-label">Supabase URL</label>
-          <input class="modal-input" type="text" id="config-url" style="margin-bottom:0"/>
-        </div>
-        <div>
-          <label class="modal-label">Supabase API Key</label>
-          <input class="modal-input" type="text" id="config-key" style="margin-bottom:0"/>
-        </div>
-        <div class="config-btns">
-          <button class="btn-primary" style="flex:none;padding:10px 20px" onclick="saveConfig()">Enregistrer la configuration</button>
-          <button class="btn-reset" onclick="resetConfig()">Réinitialiser</button>
-        </div>
-        <p class="config-note">Après enregistrement, la page se rechargera automatiquement.</p>
+
       </div>
     </div>
   </div>
@@ -988,12 +1038,23 @@ async function loadFolders(){
 async function loadDocuments(){
   try{
     const r=await fetch(
-      getSupabaseURL()+"/rest/v1/documents?select=id,code,title,size,pills,folder_id,created_at&order=created_at.asc",
+      getSupabaseURL()+"/rest/v1/documents?select=id,code,title,size,pills,folder_id,created_at,views,downloads&deleted_at=is.null&order=created_at.asc",
       {headers:getHeaders()}
     );
     const data=await r.json();
     documents=Array.isArray(data)?data:[];
   }catch(e){showToast("Erreur de connexion. Veuillez réessayer.","danger");}
+}
+
+async function loadTrashedDocuments(){
+  try{
+    const r=await fetch(
+      getSupabaseURL()+"/rest/v1/documents?select=id,code,title,size,folder_id,deleted_at&deleted_at=not.is.null&order=deleted_at.desc",
+      {headers:getHeaders()}
+    );
+    const data=await r.json();
+    return Array.isArray(data)?data:[];
+  }catch(e){showToast("Erreur de connexion.","danger");return[];}
 }
 
 async function fetchBase64(id){
@@ -1031,10 +1092,40 @@ async function deleteDocumentDB(id){
   try{await fetch(getSupabaseURL()+"/rest/v1/documents?id=eq."+id,{method:"DELETE",headers:getHeaders()});}
   catch(e){showToast("Erreur de connexion. Veuillez réessayer.","danger");}
 }
+// Envoyer à la corbeille (soft delete)
+async function trashDocumentDB(id){
+  try{await fetch(getSupabaseURL()+"/rest/v1/documents?id=eq."+id,{method:"PATCH",headers:getHeaders(),body:JSON.stringify({deleted_at:new Date().toISOString()})});}
+  catch(e){showToast("Erreur de connexion.","danger");}
+}
+// Restaurer depuis la corbeille
+async function restoreDocumentDB(id){
+  try{await fetch(getSupabaseURL()+"/rest/v1/documents?id=eq."+id,{method:"PATCH",headers:getHeaders(),body:JSON.stringify({deleted_at:null})});}
+  catch(e){showToast("Erreur de connexion.","danger");}
+}
+// Versions
+async function loadVersions(docId){
+  try{
+    const r=await fetch(getSupabaseURL()+"/rest/v1/document_versions?document_id=eq."+docId+"&select=*&order=version_number.desc",{headers:getHeaders()});
+    const data=await r.json();
+    return Array.isArray(data)?data:[];
+  }catch(e){return[];}
+}
+async function saveVersionInsert(v){
+  try{await fetch(getSupabaseURL()+"/rest/v1/document_versions",{method:"POST",headers:getHeaders(),body:JSON.stringify(v)});}
+  catch(e){showToast("Erreur lors de l'ajout de la version.","danger");}
+}
 
 // ===================== URL BUILDERS =====================
-function buildViewerURL(code){const b=location.href.split('?')[0].split('#')[0];return b+'?view='+encodeURIComponent(code);}
-function buildFolderURL(code){const b=location.href.split('?')[0].split('#')[0];return b+'?folder='+encodeURIComponent(code);}
+// On utilise l'ID du document dans les QR pour éviter les problèmes d'encodage avec les codes qui contiennent des espaces
+function buildViewerURL(id,code){
+  const b=location.href.split('?')[0].split('#')[0];
+  // Priorité à l'ID (fiable) — le code est juste pour l'affichage
+  return b+'?view='+encodeURIComponent(id);
+}
+function buildFolderURL(id,code){
+  const b=location.href.split('?')[0].split('#')[0];
+  return b+'?folder='+encodeURIComponent(id);
+}
 function buildHomeURL(){return location.href.split('?')[0].split('#')[0];}
 
 // ===================== HELPERS =====================
@@ -1171,7 +1262,7 @@ function renderFolders(){
 
   setTimeout(()=>{
     filtered.forEach(f=>{
-      makeQR('qr-folder-'+f.id,buildFolderURL(f.code||f.id),90);
+      makeQR('qr-folder-'+f.id,buildFolderURL(f.id,f.code),90);
     });
   },50);
 
@@ -1255,7 +1346,7 @@ function renderCards(){
 
   setTimeout(()=>{
     filtered.forEach(doc=>{
-      makeQR('qr-doc-'+doc.id,buildViewerURL(doc.code||doc.id),90);
+      makeQR('qr-doc-'+doc.id,buildViewerURL(doc.id,doc.code),90);
     });
   },50);
 
@@ -1381,7 +1472,7 @@ function openAdminLogin(){
 
 function checkAdminPassword(){
   const pwd=document.getElementById('admin-pwd').value;
-  if(pwd==='RECORDATI@O/rlportal'){
+  if(pwd===ADMIN_PASSWORD){
     isAdmin=true;
     document.body.classList.add('admin-mode');
     closeModal('login-overlay');
@@ -1497,12 +1588,225 @@ function closeAdmin(){
 
 function switchTab(name){
   document.querySelectorAll('#admin-tabs .tab-btn').forEach((b,i)=>{
-    const names=['dashboard','docs','folders','config'];
+    const names=['dashboard','docs','folders','trash','config'];
     b.classList.toggle('active',names[i]===name);
   });
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if(name==='dashboard') renderDashboard();
+  if(name==='trash') renderTrash();
+}
+
+// ===================== CORBEILLE =====================
+async function moveToTrash(id){
+  if(!confirm('Envoyer ce document à la corbeille ?')) return;
+  await trashDocumentDB(id);
+  await loadDocuments();
+  renderCards();
+  renderAdminList();
+  showToast("Document déplacé en corbeille.","info");
+}
+
+async function renderTrash(){
+  const list=document.getElementById('admin-trash-list');
+  if(!list) return;
+  list.innerHTML='<div class="empty-state"><div class="spinner"></div></div>';
+  const trashed=await loadTrashedDocuments();
+  if(trashed.length===0){
+    list.innerHTML='<div class="empty-state"><i class="ti ti-trash" style="font-size:2.5rem;color:#ddd"></i><p>La corbeille est vide.</p></div>';
+    return;
+  }
+  list.innerHTML=trashed.map(doc=>{
+    const folder=folders.find(f=>f.id===doc.folder_id);
+    const date=new Date(doc.deleted_at).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+    return`<div class="admin-list-item">
+      <span class="admin-item-code" style="background:#f0f0f0;color:#888">${esc(doc.code||'')}</span>
+      <span class="admin-item-title" style="color:#888">${esc(doc.title||'Sans titre')}</span>
+      <span class="admin-folder-pill">${esc(folder?folder.name:'Général')}</span>
+      <span class="admin-size" style="color:#bbb">Supprimé le ${date}</span>
+      <div class="admin-item-actions">
+        <button class="btn-icon" onclick="restoreDoc('${esc(doc.id)}')" title="Restaurer" style="color:#2e7d32"><i class="ti ti-restore"></i></button>
+        <button class="btn-icon danger" onclick="permanentDelete('${esc(doc.id)}')" title="Supprimer définitivement"><i class="ti ti-trash-x"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function restoreDoc(id){
+  await restoreDocumentDB(id);
+  await loadDocuments();
+  renderCards();
+  renderAdminList();
+  renderTrash();
+  showToast("Document restauré.","success");
+}
+
+async function permanentDelete(id){
+  if(!confirm('Supprimer définitivement ce document ? Cette action est irréversible.')) return;
+  await deleteDocumentDB(id);
+  renderTrash();
+  showToast("Document supprimé définitivement.","danger");
+}
+
+async function emptyTrash(){
+  if(!confirm('Vider toute la corbeille ? Cette action est irréversible.')) return;
+  const trashed=await loadTrashedDocuments();
+  for(const doc of trashed) await deleteDocumentDB(doc.id);
+  renderTrash();
+  showToast("Corbeille vidée.","danger");
+}
+
+// ===================== VERSIONS =====================
+let currentVersionDocId=null;
+let pendingVersionFile=null;
+
+async function openVersionsModal(docId){
+  currentVersionDocId=docId;
+  const doc=documents.find(d=>d.id===docId);
+  document.getElementById('versions-modal-title').textContent='Versions — '+(doc?doc.title:'');
+  document.getElementById('version-note').value='';
+  clearVersionFile();
+  openModal('versions-overlay');
+  await renderVersionsList(docId);
+}
+
+async function renderVersionsList(docId){
+  const list=document.getElementById('versions-list');
+  list.innerHTML='<div style="text-align:center;color:#aaa;padding:12px"><div class="spinner" style="margin:0 auto"></div></div>';
+  const versions=await loadVersions(docId);
+  if(versions.length===0){
+    list.innerHTML='<div style="color:#aaa;font-size:.82rem;text-align:center;padding:12px">Aucune version archivée.</div>';
+    return;
+  }
+  list.innerHTML=versions.map((v,i)=>{
+    const date=new Date(v.created_at).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+    const isLatest=i===0;
+    return`<div style="background:#fff;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 6px rgba(0,0,0,0.06);border-left:3px solid ${isLatest?'var(--red)':'#ddd'}">
+      <div style="flex-shrink:0;text-align:center;min-width:40px">
+        <div style="font-family:var(--font-head);font-size:1rem;color:${isLatest?'var(--red)':'#888'};font-weight:700">v${v.version_number}</div>
+        ${isLatest?'<div style="font-size:.6rem;color:var(--red);font-weight:600">ACTIVE</div>':''}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.82rem;color:#333;font-weight:500">${date}</div>
+        ${v.note?`<div style="font-size:.75rem;color:#888;margin-top:2px">${esc(v.note)}</div>`:''}
+      </div>
+      <button class="btn-icon" onclick="downloadVersion('${esc(v.id)}')" title="Télécharger cette version">
+        <i class="ti ti-download"></i>
+      </button>
+      ${!isLatest?`<button class="btn-icon" onclick="restoreVersion('${esc(v.id)}','${esc(docId)}')" title="Remettre comme version active" style="color:#2e7d32">
+        <i class="ti ti-restore"></i>
+      </button>`:''}
+    </div>`;
+  }).join('');
+}
+
+function handleVersionDrop(e){
+  e.preventDefault();
+  document.getElementById('version-drop-zone').style.borderColor='#ddd';
+  const file=e.dataTransfer.files[0];
+  if(file) handleVersionFile(file);
+}
+
+function handleVersionFile(file){
+  if(!file||(!file.type.includes('pdf')&&!file.name.toLowerCase().endsWith('.pdf'))){
+    showToast("Veuillez sélectionner un fichier PDF.","danger"); return;
+  }
+  pendingVersionFile=file;
+  document.getElementById('version-file-name').textContent=file.name;
+  document.getElementById('version-file-preview').style.display='flex';
+  document.getElementById('btn-save-version').disabled=false;
+}
+
+function clearVersionFile(){
+  pendingVersionFile=null;
+  document.getElementById('version-file-input').value='';
+  document.getElementById('version-file-preview').style.display='none';
+  document.getElementById('btn-save-version').disabled=true;
+}
+
+async function saveNewVersion(){
+  if(!pendingVersionFile||!currentVersionDocId) return;
+  const btn=document.getElementById('btn-save-version');
+  btn.disabled=true; btn.textContent='Enregistrement…';
+
+  // Lire le fichier en base64
+  const base64=await new Promise(res=>{
+    const r=new FileReader();
+    r.onload=ev=>res(ev.target.result.replace(/^data:application\/pdf;base64,/,''));
+    r.readAsDataURL(pendingVersionFile);
+  });
+
+  // Récupérer le numéro de version actuel
+  const existing=await loadVersions(currentVersionDocId);
+  const nextVersion=(existing.length>0?existing[0].version_number:0)+1;
+  const note=document.getElementById('version-note').value.trim();
+
+  // Sauvegarder l'ancienne version active d'abord
+  if(existing.length===0){
+    // Première nouvelle version : archiver le PDF actuel
+    const docBase64Resp=await fetch(getSupabaseURL()+"/rest/v1/documents?select=base64&id=eq."+currentVersionDocId,{headers:getHeaders()});
+    const docData=await docBase64Resp.json();
+    if(docData[0]?.base64){
+      await saveVersionInsert({
+        id:crypto.randomUUID(),
+        document_id:currentVersionDocId,
+        base64:docData[0].base64,
+        version_number:1,
+        created_at:new Date(documents.find(d=>d.id===currentVersionDocId)?.created_at||Date.now()).toISOString(),
+        note:'Version initiale'
+      });
+    }
+  }
+
+  // Sauvegarder la nouvelle version
+  await saveVersionInsert({
+    id:crypto.randomUUID(),
+    document_id:currentVersionDocId,
+    base64,
+    version_number:nextVersion+1,
+    created_at:new Date().toISOString(),
+    note:note||''
+  });
+
+  // Mettre à jour le PDF principal dans documents
+  await saveDocumentUpdate(currentVersionDocId,{base64,size:pendingVersionFile.size});
+
+  // Mise à jour locale
+  const doc=documents.find(d=>d.id===currentVersionDocId);
+  if(doc){doc.base64=base64;doc.size=pendingVersionFile.size;}
+
+  clearVersionFile();
+  document.getElementById('version-note').value='';
+  btn.textContent='Enregistrer cette version';
+  await renderVersionsList(currentVersionDocId);
+  renderAdminList();
+  showToast("Nouvelle version enregistrée.","success");
+}
+
+async function downloadVersion(versionId){
+  try{
+    const r=await fetch(getSupabaseURL()+"/rest/v1/document_versions?select=base64,version_number&id=eq."+versionId,{headers:getHeaders()});
+    const data=await r.json();
+    if(!data[0]?.base64){showToast("Erreur de chargement.","danger");return;}
+    const blobUrl=base64ToBlobUrl(data[0].base64);
+    const a=document.createElement('a');
+    a.href=blobUrl;
+    a.download='version_'+data[0].version_number+'.pdf';
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(blobUrl),5000);
+  }catch(e){showToast("Erreur.","danger");}
+}
+
+async function restoreVersion(versionId,docId){
+  if(!confirm('Remettre cette version comme version active ?')) return;
+  try{
+    const r=await fetch(getSupabaseURL()+"/rest/v1/document_versions?select=base64,version_number&id=eq."+versionId,{headers:getHeaders()});
+    const data=await r.json();
+    if(!data[0]?.base64){showToast("Erreur.","danger");return;}
+    await saveDocumentUpdate(docId,{base64:data[0].base64});
+    await renderVersionsList(docId);
+    showToast("Version restaurée comme version active.","success");
+  }catch(e){showToast("Erreur.","danger");}
 }
 
 function renderAdminList(){
@@ -1523,7 +1827,8 @@ function renderAdminList(){
         <select class="admin-folder-select" onchange="reassignFolder('${esc(doc.id)}',this.value)">${folderOpts}</select>
         <div class="admin-item-actions">
           <button class="btn-icon" onclick="openRenameDocModal('${esc(doc.id)}')" title="Renommer"><i class="ti ti-pencil"></i></button>
-          <button class="btn-icon danger" onclick="confirmDelete('${esc(doc.id)}')" title="Supprimer"><i class="ti ti-trash"></i></button>
+          <button class="btn-icon" onclick="openVersionsModal('${esc(doc.id)}')" title="Versions" style="color:#1565c0"><i class="ti ti-history"></i></button>
+          <button class="btn-icon danger" onclick="moveToTrash('${esc(doc.id)}')" title="Mettre en corbeille"><i class="ti ti-trash"></i></button>
         </div>
       </div>`;
     }).join('');
@@ -1749,13 +2054,13 @@ function printQR(id, type){
     if(!doc)return;
     title=doc.title||'Sans titre';
     code=doc.code||'';
-    url=buildViewerURL(doc.code||doc.id);
+    url=buildViewerURL(doc.id,doc.code);
   } else {
     const folder=folders.find(f=>f.id===id);
     if(!folder)return;
     title=folder.name||'Sans nom';
     code=folder.code||'';
-    url=buildFolderURL(folder.code||folder.id);
+    url=buildFolderURL(folder.id,folder.code);
   }
   currentPrintData={title,code,url};
   document.getElementById('qr-print-title').textContent=title;
@@ -1831,6 +2136,10 @@ async function confirmUpload(){
   showToast(count+" document(s) ajouté(s) avec codes uniques.","success");
 }
 
+// ===================== MOT DE PASSE ADMIN =====================
+// Pour changer le mot de passe : modifier la ligne ci-dessous et redéployer sur GitHub Pages
+const ADMIN_PASSWORD = 'RECORDATI@O/rlportal';
+
 // ===================== CONFIG =====================
 function saveConfig(){
   const url=document.getElementById('config-url').value.trim();
@@ -1859,12 +2168,19 @@ window.addEventListener('load',async()=>{
   setTimeout(()=>makeQR('qr-home-box',buildHomeURL(),100),100);
 
   const params=new URLSearchParams(window.location.search);
-  const viewCode=params.get('view');
-  const folderCode=params.get('folder');
-  if(viewCode){
-    setTimeout(()=>{const d=documents.find(x=>x.code===viewCode);if(d)openViewer(d.id);},300);
-  } else if(folderCode){
-    setTimeout(()=>{const f=folders.find(x=>x.code===folderCode);if(f)openFolder(f.id);},300);
+  const viewId=params.get('view');
+  const folderId=params.get('folder');
+  if(viewId){
+    // Chercher d'abord par ID (QR codes récents), puis par code (anciens QR)
+    setTimeout(()=>{
+      const d=documents.find(x=>x.id===viewId)||documents.find(x=>x.code===viewId);
+      if(d)openViewer(d.id);
+    },300);
+  } else if(folderId){
+    setTimeout(()=>{
+      const f=folders.find(x=>x.id===folderId)||folders.find(x=>x.code===folderId);
+      if(f)openFolder(f.id);
+    },300);
   }
 });
 
