@@ -1299,8 +1299,8 @@ function renderCards(){
   let filtered=documents.filter(d=>d.folder_id===currentFolderId);
   if(q){
     filtered=filtered.filter(d=>
-      (d.title||'').toLowerCase().includes(d.code||'').toLowerCase().includes(q)||
-      (d.title||'').toLowerCase().includes(q)
+      (d.title||'').toLowerCase().includes(q)||
+      (d.code||'').toLowerCase().includes(q)
     );
   }
 
