@@ -678,14 +678,18 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
     </button>
   </div>
   <!-- Barre de recherche dans le dossier -->
-  <div style="max-width:1280px;margin:8px auto 0;padding:0 20px">
-    <div class="search-box" style="max-width:500px">
-      <i class="ti ti-search"></i>
-      <input type="text" id="search-input-folder" placeholder="Rechercher dans ce dossier…"
+  <div style="max-width:1280px;margin:8px auto 0;padding:0 20px 8px">
+    <div style="position:relative;max-width:500px">
+      <i class="ti ti-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#999;font-size:1rem;pointer-events:none"></i>
+      <input
+        type="text"
+        id="search-input-folder"
+        placeholder="Rechercher dans ce dossier…"
         oninput="handleFolderSearch()"
-        style="width:100%;padding:9px 16px 9px 42px;border:1.5px solid #e0e0e0;border-radius:10px;
-        font-family:var(--font-body);font-size:.88rem;color:#333;background:#fff;outline:none;transition:border-color .2s"
-        onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='#e0e0e0'"/>
+        style="width:100%;padding:9px 16px 9px 40px;border:1.5px solid #e0e0e0;border-radius:10px;font-family:var(--font-body);font-size:.88rem;color:#333;background:#fff;outline:none;transition:border-color .2s;"
+        onfocus="this.style.borderColor='var(--red)'"
+        onblur="this.style.borderColor='#e0e0e0'"
+      />
     </div>
   </div>
 </div>
