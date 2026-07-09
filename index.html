@@ -677,6 +677,17 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
       <i class="ti ti-arrow-left"></i> Retour aux dossiers
     </button>
   </div>
+  <!-- Barre de recherche dans le dossier -->
+  <div style="max-width:1280px;margin:8px auto 0;padding:0 20px">
+    <div class="search-box" style="max-width:500px">
+      <i class="ti ti-search"></i>
+      <input type="text" id="search-input-folder" placeholder="Rechercher dans ce dossier…"
+        oninput="handleFolderSearch()"
+        style="width:100%;padding:9px 16px 9px 42px;border:1.5px solid #e0e0e0;border-radius:10px;
+        font-family:var(--font-body);font-size:.88rem;color:#333;background:#fff;outline:none;transition:border-color .2s"
+        onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='#e0e0e0'"/>
+    </div>
+  </div>
 </div>
 
 <!-- FOOTER -->
@@ -1285,7 +1296,9 @@ function closeFolder(){
   document.getElementById('breadcrumb-bar').style.display='none';
   document.getElementById('docs-section').style.display='none';
   document.getElementById('folders-section').style.display='';
-  // Remonter en haut de page pour voir les dossiers
+  // Vider la recherche du dossier
+  const fi=document.getElementById('search-input-folder');
+  if(fi) fi.value='';
   window.scrollTo({top:0,behavior:'smooth'});
   renderFolders();
 }
@@ -1294,7 +1307,7 @@ function closeFolder(){
 function renderCards(){
   if(!currentFolderId)return;
   const grid=document.getElementById('cards-grid');
-  const q=(document.getElementById('search-input').value||'').toLowerCase();
+  const q=(document.getElementById('search-input-folder').value||'').toLowerCase();
 
   let filtered=documents.filter(d=>d.folder_id===currentFolderId);
   if(q){
@@ -1365,8 +1378,13 @@ function updateDocCount(){
 
 // ===================== SEARCH =====================
 function handleSearch(){
-  if(currentFolderId)renderCards();
-  else renderFolders();
+  // Recherche sur la page d'accueil (dossiers)
+  renderFolders();
+}
+
+function handleFolderSearch(){
+  // Recherche à l'intérieur d'un dossier
+  renderCards();
 }
 
 // ===================== HELPER : base64 → Blob URL =====================
@@ -2128,7 +2146,8 @@ async function confirmUpload(){
   }
 
   await loadDocuments();
-  renderCards();
+  renderFolders();
+  if(currentFolderId) renderCards();
   renderAdminList();
   btn.disabled=false;
   btn.textContent='Ajouter les documents';
