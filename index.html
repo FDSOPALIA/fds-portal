@@ -173,7 +173,7 @@ body{font-family:var(--font-body);color:#333;background:#f7f7f7;min-height:100vh
 /* BREADCRUMB */
 #breadcrumb-bar{
   display:none;background:#fff;border-bottom:1.5px solid #eee;
-  padding:10px 20px;position:sticky;top:71px;z-index:90;
+  padding:10px 20px 0;position:sticky;top:68px;z-index:90;
 }
 .breadcrumb-inner{
   max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
@@ -635,37 +635,7 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
   </div>
 </div>
 
-<!-- MAIN WRAP -->
-<div id="main-wrap">
-
-  <!-- SEARCH TOOLBAR -->
-  <div id="search-toolbar">
-    <div class="search-box">
-      <i class="ti ti-search"></i>
-      <input type="text" id="search-input" placeholder="Rechercher une fiche produit par titre ou code…" oninput="handleSearch()"/>
-    </div>
-    <span id="doc-count"></span>
-  </div>
-
-  <!-- LOADING STATE -->
-  <div id="loading-state">
-    <div class="spinner"></div>
-    <span>Chargement…</span>
-  </div>
-
-  <!-- FOLDERS -->
-  <div id="folders-section">
-    <div id="folders-grid"></div>
-  </div>
-
-  <!-- DOCS SECTION -->
-  <div id="docs-section">
-    <div id="cards-grid"></div>
-  </div>
-
-</div>
-
-<!-- BREADCRUMB -->
+<!-- BREADCRUMB (avant le contenu principal) -->
 <div id="breadcrumb-bar">
   <div class="breadcrumb-inner">
     <button class="breadcrumb-home" onclick="closeFolder()">
@@ -692,6 +662,36 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
       />
     </div>
   </div>
+</div>
+
+<!-- MAIN WRAP -->
+<div id="main-wrap">
+
+  <!-- SEARCH TOOLBAR (page d'accueil) -->
+  <div id="search-toolbar">
+    <div class="search-box">
+      <i class="ti ti-search"></i>
+      <input type="text" id="search-input" placeholder="Rechercher une fiche produit par titre ou code…" oninput="handleSearch()"/>
+    </div>
+    <span id="doc-count"></span>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div id="loading-state">
+    <div class="spinner"></div>
+    <span>Chargement…</span>
+  </div>
+
+  <!-- FOLDERS -->
+  <div id="folders-section">
+    <div id="folders-grid"></div>
+  </div>
+
+  <!-- DOCS SECTION -->
+  <div id="docs-section">
+    <div id="cards-grid"></div>
+  </div>
+
 </div>
 
 <!-- FOOTER -->
@@ -1289,7 +1289,8 @@ function openFolder(id){
   currentFolderId=id;
   const folder=folders.find(f=>f.id===id);
   document.getElementById('breadcrumb-folder-name').textContent=folder?folder.name:'';
-  document.getElementById('breadcrumb-bar').style.display='';
+  document.getElementById('breadcrumb-bar').style.display='block';
+  document.getElementById('search-toolbar').style.display='none';
   document.getElementById('folders-section').style.display='none';
   document.getElementById('docs-section').style.display='block';
   renderCards();
@@ -1300,7 +1301,7 @@ function closeFolder(){
   document.getElementById('breadcrumb-bar').style.display='none';
   document.getElementById('docs-section').style.display='none';
   document.getElementById('folders-section').style.display='';
-  // Vider la recherche du dossier
+  document.getElementById('search-toolbar').style.display='flex';
   const fi=document.getElementById('search-input-folder');
   if(fi) fi.value='';
   window.scrollTo({top:0,behavior:'smooth'});
