@@ -637,8 +637,8 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
 
 <!-- BREADCRUMB (avant le contenu principal) -->
 <div id="breadcrumb-bar">
-  <div class="breadcrumb-inner">
-    <button class="breadcrumb-home" onclick="closeFolder()">
+  <div class="breadcrumb-inner" id="breadcrumb-inner-nav">
+    <button class="breadcrumb-home" onclick="closeAllFolders()">
       <i class="ti ti-home"></i> Accueil
     </button>
     <span class="breadcrumb-sep">›</span>
@@ -943,6 +943,7 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
     <span class="admin-badge">Admin</span>
     <button class="btn-admin-action" onclick="openUploadModal()"><i class="ti ti-upload"></i> Ajouter des PDFs</button>
     <button class="btn-admin-action" onclick="openCreateFolderModal()"><i class="ti ti-folder-plus"></i> Nouveau dossier</button>
+    <button class="btn-admin-action" id="btn-new-subfolder" style="display:none" onclick="openCreateSubFolderModal(currentFolderId)"><i class="ti ti-folder-plus"></i> Sous-dossier</button>
   </div>
   <div id="admin-tabs">
     <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
@@ -1028,6 +1029,8 @@ let documents=[];
 let folders=[];
 let isAdmin=false;
 let currentFolderId=null;
+let folderStack=[]; // pile de navigation [{id,name}]
+let pendingSubFolderParentId=null;
 let pendingDeleteId=null;
 let pendingDeleteFolderId=null;
 let deleteDocsAlso=true;
@@ -1226,7 +1229,8 @@ function renderFolders(){
   document.getElementById('folders-section').style.display='';
   document.getElementById('breadcrumb-bar').style.display='none';
 
-  let filtered=folders;
+  // Dossiers racine uniquement (sans parent)
+  let filtered=folders.filter(f=>!f.parent_id);
   if(q){
     filtered=folders.filter(f=>
       (f.name||'').toLowerCase().includes(q)||(f.code||'').toLowerCase().includes(q)
@@ -1240,6 +1244,7 @@ function renderFolders(){
   }
 
   grid.innerHTML=filtered.map(f=>{
+    const subCount=folders.filter(sf=>(sf.parent_id||null)===f.id).length;
     const docCount=documents.filter(d=>d.folder_id===f.id).length;
     const iconColor=f.color||'#C8102E';
     const icon=f.icon||'ti-folder';
@@ -1252,7 +1257,7 @@ function renderFolders(){
         <div class="folder-meta">
           <span class="folder-code">${esc(f.code||'')}</span>
           <div class="folder-name">${esc(f.name||'Sans nom')}</div>
-          <div class="folder-doc-count">${docCount} document(s)</div>
+          <div class="folder-doc-count">${subCount} sous-dossier(s) · ${docCount} doc(s)</div>
         </div>
       </div>
       <div class="folder-qr-box">
@@ -1286,24 +1291,109 @@ function renderFolders(){
 
 // ===================== OPEN / CLOSE FOLDER =====================
 function openFolder(id){
-  currentFolderId=id;
   const folder=folders.find(f=>f.id===id);
-  document.getElementById('breadcrumb-folder-name').textContent=folder?folder.name:'';
+  if(!folder)return;
+  folderStack.push({id,name:folder.name});
+  currentFolderId=id;
+  updateBreadcrumb();
   document.getElementById('breadcrumb-bar').style.display='block';
   document.getElementById('search-toolbar').style.display='none';
-  document.getElementById('folders-section').style.display='none';
+  document.getElementById('folders-section').style.display='block';
   document.getElementById('docs-section').style.display='block';
+  const sb=document.getElementById('btn-new-subfolder');
+  if(sb) sb.style.display=isAdmin?'flex':'none';
+  renderFolderContent();
+}
+
+function openCreateSubFolderModal(parentId){
+  pendingSubFolderParentId=parentId||currentFolderId||null;
+  openCreateFolderModal();
+}
+
+function updateBreadcrumb(){
+  const bar=document.getElementById('breadcrumb-inner-nav');
+  if(!bar)return;
+  let h=`<button class="breadcrumb-home" onclick="closeAllFolders()"><i class="ti ti-home"></i> Accueil</button>`;
+  folderStack.forEach((item,i)=>{
+    h+=`<span class="breadcrumb-sep">›</span>`;
+    if(i===folderStack.length-1){
+      h+=`<span class="breadcrumb-current">${esc(item.name)}</span>`;
+    } else {
+      h+=`<button class="breadcrumb-home" onclick="goToFolderLevel(${i})">${esc(item.name)}</button>`;
+    }
+  });
+  h+=`<button class="btn-back" onclick="closeFolder()"><i class="ti ti-arrow-left"></i> Retour</button>`;
+  bar.innerHTML=h;
+}
+
+function goToFolderLevel(index){
+  folderStack=folderStack.slice(0,index+1);
+  currentFolderId=folderStack[folderStack.length-1].id;
+  updateBreadcrumb();
+  renderFolderContent();
+}
+
+function renderFolderContent(){
+  if(!currentFolderId)return;
+  const q=(document.getElementById('search-input-folder').value||'').toLowerCase();
+  const subFolders=folders.filter(f=>(f.parent_id||null)===currentFolderId);
+  const folderGrid=document.getElementById('folders-grid');
+  const adminBtn=isAdmin?`<div style="margin-bottom:12px"><button class="btn-admin-action" style="font-size:.82rem;padding:7px 14px" onclick="openCreateSubFolderModal(currentFolderId)"><i class="ti ti-folder-plus"></i> Nouveau sous-dossier</button></div>`:'';
+  if(subFolders.length===0){
+    folderGrid.innerHTML=adminBtn+'<div></div>';
+  } else {
+    folderGrid.innerHTML=adminBtn+subFolders.map(f=>{
+      const subCount=folders.filter(sf=>(sf.parent_id||null)===f.id).length;
+      const docCount=documents.filter(d=>d.folder_id===f.id).length;
+      const ic=f.color||'#C8102E';
+      const icon=f.icon||'ti-folder';
+      const qrId='qr-folder-'+f.id;
+      return`<div class="folder-card" onclick="openFolder('${esc(f.id)}')">
+        <div class="folder-card-header">
+          <div class="folder-icon-wrap" style="background:${esc(ic)}22"><i class="ti ${esc(icon)}" style="color:${esc(ic)}"></i></div>
+          <div class="folder-meta">
+            <span class="folder-code">${esc(f.code||'')}</span>
+            <div class="folder-name">${esc(f.name||'Sans nom')}</div>
+            <div class="folder-doc-count">${subCount} sous-dossier(s) · ${docCount} doc(s)</div>
+          </div>
+        </div>
+        <div class="folder-qr-box"><div id="${qrId}"></div><div class="folder-qr-label">Scanner pour ouvrir</div></div>
+        <div class="folder-actions">
+          <button class="btn-open-folder" onclick="event.stopPropagation();openFolder('${esc(f.id)}')"><i class="ti ti-folder-open"></i> Ouvrir</button>
+          <div class="folder-admin-btns">
+            <button class="btn-icon" onclick="event.stopPropagation();openRenameFolderModal('${esc(f.id)}')" title="Renommer"><i class="ti ti-pencil"></i></button>
+            <button class="btn-icon danger" onclick="event.stopPropagation();confirmDeleteFolder('${esc(f.id)}')" title="Supprimer"><i class="ti ti-trash"></i></button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    setTimeout(()=>subFolders.forEach(f=>makeQR('qr-folder-'+f.id,buildFolderURL(f.id,f.code),90)),50);
+  }
   renderCards();
 }
 
 function closeFolder(){
+  if(folderStack.length<=1){
+    closeAllFolders();
+    return;
+  }
+  folderStack.pop();
+  currentFolderId=folderStack[folderStack.length-1].id;
+  updateBreadcrumb();
+  renderFolderContent();
+}
+
+function closeAllFolders(){
   currentFolderId=null;
+  folderStack=[];
   document.getElementById('breadcrumb-bar').style.display='none';
   document.getElementById('docs-section').style.display='none';
   document.getElementById('folders-section').style.display='';
   document.getElementById('search-toolbar').style.display='flex';
   const fi=document.getElementById('search-input-folder');
   if(fi) fi.value='';
+  const sb=document.getElementById('btn-new-subfolder');
+  if(sb) sb.style.display='none';
   window.scrollTo({top:0,behavior:'smooth'});
   renderFolders();
 }
@@ -1441,7 +1531,7 @@ async function openViewer(id){
 
   document.getElementById('viewer-back').onclick=()=>{
     closeViewer();
-    if(doc.folder_id)openFolder(doc.folder_id);else closeFolder();
+    if(currentFolderId) renderFolderContent();
   };
 
   document.getElementById('viewer-download').onclick=()=>{
@@ -1500,8 +1590,7 @@ function checkAdminPassword(){
     document.body.classList.add('admin-mode');
     closeModal('login-overlay');
     openAdmin();
-    renderFolders();
-    if(currentFolderId)renderCards();
+    if(currentFolderId) renderFolderContent(); else renderFolders();
   } else {
     document.getElementById('login-error').style.display='block';
     showToast("Mot de passe incorrect.","danger");
@@ -1625,7 +1714,7 @@ async function moveToTrash(id){
   if(!confirm('Envoyer ce document à la corbeille ?')) return;
   await trashDocumentDB(id);
   await loadDocuments();
-  renderCards();
+  if(currentFolderId) renderFolderContent(); else renderFolders();
   renderAdminList();
   showToast("Document déplacé en corbeille.","info");
 }
@@ -1658,7 +1747,7 @@ async function renderTrash(){
 async function restoreDoc(id){
   await restoreDocumentDB(id);
   await loadDocuments();
-  renderCards();
+  if(currentFolderId) renderFolderContent(); else renderFolders();
   renderAdminList();
   renderTrash();
   showToast("Document restauré.","success");
@@ -1911,7 +2000,9 @@ function selectIcon(i){
 async function submitCreateFolder(){
   const name=document.getElementById('create-folder-name').value.trim();
   if(!name){showToast("Veuillez saisir un nom.","danger");return;}
-  await createFolder({name,code:generateFolderCode(),color:selectedColor,icon:selectedIcon});
+  const parentId=pendingSubFolderParentId||null;
+  await createFolder({name,code:generateFolderCode(),color:selectedColor,icon:selectedIcon,parent_id:parentId});
+  pendingSubFolderParentId=null;
   closeModal('create-folder-overlay');
 }
 
@@ -1919,7 +2010,7 @@ async function createFolder(data){
   const folder={id:crypto.randomUUID(),...data,created_at:new Date().toISOString()};
   await saveFolderInsert(folder);
   await loadFolders();
-  renderFolders();
+  if(currentFolderId) renderFolderContent(); else renderFolders();
   renderAdminList();
   showToast("Dossier créé.","success");
 }
@@ -1942,7 +2033,7 @@ async function submitRenameFolder(){
 async function renameFolderDB(id,newName){
   await saveFolderUpdate(id,{name:newName});
   await loadFolders();
-  renderFolders();
+  if(currentFolderId) renderFolderContent(); else renderFolders();
   renderAdminList();
   showToast("Dossier renommé.","success");
 }
@@ -1957,18 +2048,24 @@ function confirmDeleteFolder(id){
 async function executeDeleteFolder(){
   const folder=folders.find(f=>f.id===pendingDeleteFolderId);
   if(!folder)return;
-  if(deleteDocsAlso){
-    for(const doc of documents.filter(d=>d.folder_id===folder.id))await deleteDocumentDB(doc.id);
-  } else {
-    for(const doc of documents.filter(d=>d.folder_id===folder.id))await saveDocumentUpdate(doc.id,{folder_id:null});
+  async function deleteRecursive(fid){
+    const children=folders.filter(f=>(f.parent_id||null)===fid);
+    for(const c of children) await deleteRecursive(c.id);
+    if(deleteDocsAlso){
+      for(const doc of documents.filter(d=>d.folder_id===fid)) await deleteDocumentDB(doc.id);
+    } else {
+      for(const doc of documents.filter(d=>d.folder_id===fid)) await saveDocumentUpdate(doc.id,{folder_id:null});
+    }
+    await deleteFolderDB(fid);
   }
-  await deleteFolderDB(folder.id);
+  await deleteRecursive(folder.id);
   await loadFolders();
   await loadDocuments();
-  renderFolders();
-  renderAdminList();
   closeModal('delete-folder-overlay');
-  if(currentFolderId===pendingDeleteFolderId)closeFolder();
+  if(folderStack.some(s=>s.id===pendingDeleteFolderId)) closeAllFolders();
+  else if(currentFolderId) renderFolderContent();
+  else renderFolders();
+  renderAdminList();
   showToast("Dossier supprimé.","danger");
 }
 
@@ -1991,7 +2088,7 @@ async function submitRenameDoc(){
 async function renameDocDB(id,newTitle){
   await saveDocumentUpdate(id,{title:newTitle});
   await loadDocuments();
-  renderCards();
+  if(currentFolderId) renderFolderContent(); else renderFolders();
   renderAdminList();
   showToast("Document renommé.","success");
 }
@@ -2005,7 +2102,7 @@ async function executeDelete(){
   if(!pendingDeleteId)return;
   await deleteDocumentDB(pendingDeleteId);
   await loadDocuments();
-  renderCards();
+  if(currentFolderId) renderFolderContent(); else renderFolders();
   renderAdminList();
   closeModal('delete-doc-overlay');
   showToast("Document supprimé.","danger");
@@ -2014,6 +2111,7 @@ async function executeDelete(){
 async function reassignFolder(docId,newFolderId){
   await saveDocumentUpdate(docId,{folder_id:newFolderId||null});
   await loadDocuments();
+  if(currentFolderId) renderFolderContent(); else renderFolders();
   renderAdminList();
   showToast("Document déplacé.","info");
 }
@@ -2025,8 +2123,17 @@ function openUploadModal(){
   document.getElementById('file-input').value='';
   renderQueue();
   const sel=document.getElementById('upload-folder-select');
-  sel.innerHTML='<option value="">— Documents généraux —</option>'+
-    folders.map(f=>`<option value="${esc(f.id)}" ${selectedFolderId===f.id?'selected':''}>${esc(f.name)}</option>`).join('');
+  // Tous les dossiers (y compris sous-dossiers) avec indication du niveau
+  function folderLabel(f,depth=0){
+    return'  '.repeat(depth)+esc(f.name);
+  }
+  function buildFolderOptions(parentId=null,depth=0){
+    return folders.filter(f=>(f.parent_id||null)===parentId).map(f=>
+      `<option value="${esc(f.id)}" ${selectedFolderId===f.id?'selected':''}>${folderLabel(f,depth)}</option>`+
+      buildFolderOptions(f.id,depth+1)
+    ).join('');
+  }
+  sel.innerHTML='<option value="">— Documents généraux —</option>'+buildFolderOptions();
   openModal('upload-overlay');
 }
 
@@ -2151,8 +2258,7 @@ async function confirmUpload(){
   }
 
   await loadDocuments();
-  renderFolders();
-  if(currentFolderId) renderCards();
+  if(currentFolderId) renderFolderContent(); else renderFolders();
   renderAdminList();
   btn.disabled=false;
   btn.textContent='Ajouter les documents';
@@ -2195,7 +2301,6 @@ window.addEventListener('load',async()=>{
   const viewId=params.get('view');
   const folderId=params.get('folder');
   if(viewId){
-    // Chercher d'abord par ID (QR codes récents), puis par code (anciens QR)
     setTimeout(()=>{
       const d=documents.find(x=>x.id===viewId)||documents.find(x=>x.code===viewId);
       if(d)openViewer(d.id);
