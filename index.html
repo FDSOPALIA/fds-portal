@@ -674,6 +674,10 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
       <input type="text" id="search-input" placeholder="Rechercher une fiche produit par titre ou code…" oninput="handleSearch()"/>
     </div>
     <span id="doc-count"></span>
+    <!-- Bouton nouveau dossier — visible uniquement en mode admin -->
+    <button class="btn-admin-action admin-only" style="display:none;font-size:.82rem;padding:7px 14px;white-space:nowrap" onclick="openCreateFolderModal()">
+      <i class="ti ti-folder-plus"></i> Nouveau dossier
+    </button>
   </div>
 
   <!-- LOADING STATE -->
