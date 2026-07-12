@@ -985,6 +985,7 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
     <button class="btn-admin-action" onclick="openUploadModal()"><i class="ti ti-upload"></i> Ajouter des PDFs</button>
     <button class="btn-admin-action" onclick="openCreateFolderModal()"><i class="ti ti-folder-plus"></i> Nouveau dossier</button>
     <button class="btn-admin-action" id="btn-new-subfolder" style="display:none" onclick="openCreateSubFolderModal(currentFolderId)"><i class="ti ti-folder-plus"></i> Sous-dossier</button>
+    <button class="btn-admin-action" style="background:#555" onclick="closeAdmin();logoutAdmin()"><i class="ti ti-logout"></i> Déconnexion</button>
   </div>
   <div id="admin-tabs">
     <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
@@ -1649,6 +1650,7 @@ function checkAdminPassword(){
   const pwd=document.getElementById('admin-pwd').value;
   if(pwd===ADMIN_PASSWORD){
     isAdmin=true;
+    sessionStorage.setItem('fds_admin','1');
     document.body.classList.add('admin-mode');
     closeModal('login-overlay');
     openAdmin();
@@ -1759,6 +1761,14 @@ function renderDashboard(){
 
 function closeAdmin(){
   closeModal('admin-overlay');
+}
+
+function logoutAdmin(){
+  isAdmin=false;
+  sessionStorage.removeItem('fds_admin');
+  document.body.classList.remove('admin-mode');
+  if(currentFolderId) renderFolderContent(); else renderFolders();
+  showToast("Déconnecté du mode admin.","info");
 }
 
 function switchTab(name){
@@ -2504,7 +2514,15 @@ window.addEventListener('load',async()=>{
   document.getElementById('loading-state').style.display='flex';
   await loadFolders();
   await loadDocuments();
+  await loadCodeTypes();
   document.getElementById('loading-state').style.display='none';
+
+  // Restaurer la session admin si elle existe (persist après actualisation)
+  if(sessionStorage.getItem('fds_admin')==='1'){
+    isAdmin=true;
+    document.body.classList.add('admin-mode');
+  }
+
   renderFolders();
 
   setTimeout(()=>makeQR('qr-home-box',buildHomeURL(),100),100);
