@@ -1496,7 +1496,7 @@ function renderCards(){
     return`<div class="doc-card">
       <div class="doc-card-top">
         <span class="doc-code-badge">${esc(doc.code||'')}</span>
-        <button class="btn-icon danger admin-only" onclick="confirmDelete('${esc(doc.id)}')" title="Supprimer" style="display:none">
+        <button class="btn-icon danger admin-only" onclick="moveToTrash('${esc(doc.id)}')" title="Mettre en corbeille" style="display:none">
           <i class="ti ti-trash"></i>
         </button>
       </div>
