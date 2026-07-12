@@ -1402,7 +1402,14 @@ function renderFolderContent(){
   const q=(document.getElementById('search-input-folder').value||'').toLowerCase();
   const subFolders=folders.filter(f=>(f.parent_id||null)===currentFolderId);
   const folderGrid=document.getElementById('folders-grid');
-  const adminBtn=isAdmin?`<div style="margin-bottom:12px"><button class="btn-admin-action" style="font-size:.82rem;padding:7px 14px" onclick="openCreateSubFolderModal(currentFolderId)"><i class="ti ti-folder-plus"></i> Nouveau sous-dossier</button></div>`:'';
+  const adminBtn=isAdmin?`<div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+    <button class="btn-admin-action" style="font-size:.82rem;padding:7px 14px" onclick="openCreateSubFolderModal(currentFolderId)">
+      <i class="ti ti-folder-plus"></i> Nouveau sous-dossier
+    </button>
+    <button class="btn-admin-action" style="font-size:.82rem;padding:7px 14px;background:var(--dark-red)" onclick="openUploadModal()">
+      <i class="ti ti-file-plus"></i> Ajouter un PDF
+    </button>
+  </div>`:'';
   if(subFolders.length===0){
     folderGrid.innerHTML=adminBtn+'<div></div>';
   } else {
@@ -2369,13 +2376,19 @@ function onCodeNumberInput(){
   errEl.style.display='none';
   if(num.length>0){
     const padded=num.padStart(ct.digits,'0');
-    const fullCode=ct.prefix+padded;
-    preview.textContent='Code final : '+fullCode;
-    // Vérifier doublon
-    const exists=documents.some(d=>(d.code||'').toUpperCase()===fullCode.toUpperCase());
-    if(exists){
-      errEl.textContent='⚠️ Ce code existe déjà. Choisissez un autre numéro.';
+    const baseCode=ct.prefix+padded;
+    const existingCodes=documents.map(d=>(d.code||'').toUpperCase());
+    if(existingCodes.includes(baseCode.toUpperCase())){
+      // Calculer le prochain suffixe
+      let n=1;
+      while(existingCodes.includes((baseCode+'('+n+')').toUpperCase())) n++;
+      const nextCode=baseCode+'('+n+')';
+      preview.textContent='Code final : '+nextCode;
+      errEl.textContent='ℹ️ '+baseCode+' existe déjà — ce PDF sera enregistré comme '+nextCode;
       errEl.style.display='block';
+      errEl.style.color='#1565c0';
+    } else {
+      preview.textContent='Code final : '+baseCode;
     }
   } else {
     preview.textContent='';
@@ -2385,7 +2398,7 @@ function onCodeNumberInput(){
 async function getDocumentCode(folderId, fileName){
   const folderType=getFolderType(folderId);
   if(!folderType){
-    // Pas de type → code depuis nom du fichier (comportement original)
+    // Pas de type → code depuis nom du fichier
     return await generateUniqueCode(fileName);
   }
   const ct=getCodeType(folderType);
@@ -2396,15 +2409,18 @@ async function getDocumentCode(folderId, fileName){
     return null;
   }
   const padded=num.padStart(ct.digits,'0');
-  const fullCode=ct.prefix+padded;
-  // Vérifier unicité finale
+  const baseCode=ct.prefix+padded;
+  // Recharger pour avoir les codes les plus récents
   await loadDocuments();
-  const exists=documents.some(d=>(d.code||'').toUpperCase()===fullCode.toUpperCase());
-  if(exists){
-    showToast('Code '+fullCode+' déjà utilisé. Choisissez un autre numéro.','danger');
-    return null;
+  // Vérifier si le code de base existe déjà
+  const existingCodes=documents.map(d=>(d.code||'').toUpperCase());
+  if(!existingCodes.includes(baseCode.toUpperCase())){
+    return baseCode; // RL0001 → libre
   }
-  return fullCode;
+  // Doublon → ajouter suffixe (1), (2), ...
+  let n=1;
+  while(existingCodes.includes((baseCode+'('+n+')').toUpperCase())) n++;
+  return baseCode+'('+n+')'; // RL0001(1), RL0001(2)...
 }
 
 // ===================== UPLOAD AVEC CODE UNIQUE GARANTI =====================
@@ -2421,10 +2437,14 @@ async function confirmUpload(){
     const code=await getDocumentCode(folderSel, file.name);
     if(!code){ btn.disabled=false; btn.textContent='Ajouter les documents'; return; }
 
+    // Titre = code uniquement si dossier typé, sinon nom du fichier
+    const folderType=getFolderType(folderSel);
+    const title=folderType ? code : file.name.replace(/\.pdf$/i,'').replace(/[-_]/g,' ');
+
     const doc={
       id:crypto.randomUUID(),
       code:code,
-      title:file.name.replace(/\.pdf$/i,'').replace(/[-_]/g,' '),
+      title:title,
       base64:file.base64,
       size:file.size,
       pills:[{label:'Document',color:'blue'}],
