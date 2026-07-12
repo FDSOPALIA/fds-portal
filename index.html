@@ -1406,18 +1406,26 @@ function renderFolderContent(){
   const q=(document.getElementById('search-input-folder').value||'').toLowerCase();
   const subFolders=folders.filter(f=>(f.parent_id||null)===currentFolderId);
   const folderGrid=document.getElementById('folders-grid');
-  const adminBtn=isAdmin?`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
-    <button class="btn-admin-action" style="font-size:.78rem;padding:6px 12px;border-radius:8px" onclick="openCreateSubFolderModal(currentFolderId)">
+  const adminBtn=isAdmin?`<div id="folder-admin-btns-bar" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+    <button class="btn-admin-action" style="font-size:.78rem;padding:6px 12px" onclick="openCreateSubFolderModal(currentFolderId)">
       <i class="ti ti-folder-plus"></i> Nouveau sous-dossier
     </button>
-    <button class="btn-admin-action" style="font-size:.78rem;padding:6px 12px;border-radius:8px;background:var(--dark-red)" onclick="openUploadModal()">
+    <button class="btn-admin-action" style="font-size:.78rem;padding:6px 12px;background:var(--dark-red)" onclick="openUploadModal()">
       <i class="ti ti-file-plus"></i> Ajouter un PDF
     </button>
   </div>`:'';
+  // Injecter les boutons admin AVANT la grille
+  const foldersSection=document.getElementById('folders-section');
+  let btnsBar=document.getElementById('folder-admin-btns-bar');
+  if(btnsBar) btnsBar.remove();
+  if(adminBtn){
+    foldersSection.insertAdjacentHTML('afterbegin', adminBtn);
+  }
+
   if(subFolders.length===0){
-    folderGrid.innerHTML=adminBtn+'<div></div>';
+    folderGrid.innerHTML='<div></div>';
   } else {
-    folderGrid.innerHTML=adminBtn+subFolders.map(f=>{
+    folderGrid.innerHTML=subFolders.map(f=>{
       const subCount=folders.filter(sf=>(sf.parent_id||null)===f.id).length;
       const docCount=documents.filter(d=>d.folder_id===f.id).length;
       const ic=f.color||'#C8102E';
@@ -1464,6 +1472,9 @@ function closeAllFolders(){
   document.getElementById('docs-section').style.display='none';
   document.getElementById('folders-section').style.display='';
   document.getElementById('search-toolbar').style.display='flex';
+  // Nettoyer les boutons admin du dossier
+  const btnsBar=document.getElementById('folder-admin-btns-bar');
+  if(btnsBar) btnsBar.remove();
   const fi=document.getElementById('search-input-folder');
   if(fi) fi.value='';
   const sb=document.getElementById('btn-new-subfolder');
