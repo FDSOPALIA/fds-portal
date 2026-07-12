@@ -1319,7 +1319,6 @@ function renderFolders(){
           <i class="ti ${esc(icon)}" style="color:${esc(iconColor)}"></i>
         </div>
         <div class="folder-meta">
-          <span class="folder-code">${esc(f.code||'')}</span>
           <div class="folder-name">${esc(f.name||'Sans nom')}</div>
           <div class="folder-doc-count">${subCount} sous-dossier(s) · ${docCount} doc(s)</div>
         </div>
@@ -1416,8 +1415,7 @@ function renderFolderContent(){
         <div class="folder-card-header">
           <div class="folder-icon-wrap" style="background:${esc(ic)}22"><i class="ti ${esc(icon)}" style="color:${esc(ic)}"></i></div>
           <div class="folder-meta">
-            <span class="folder-code">${esc(f.code||'')}</span>
-            <div class="folder-name">${esc(f.name||'Sans nom')}</div>
+              <div class="folder-name">${esc(f.name||'Sans nom')}</div>
             <div class="folder-doc-count">${subCount} sous-dossier(s) · ${docCount} doc(s)</div>
           </div>
         </div>
