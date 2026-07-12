@@ -2439,9 +2439,9 @@ async function confirmUpload(){
     const code=await getDocumentCode(folderSel, file.name);
     if(!code){ btn.disabled=false; btn.textContent='Ajouter les documents'; return; }
 
-    // Titre = code uniquement si dossier typé, sinon nom du fichier
+    // Titre = nom du fichier toujours, code = préfixe+numéro
     const folderType=getFolderType(folderSel);
-    const title=folderType ? code : file.name.replace(/\.pdf$/i,'').replace(/[-_]/g,' ');
+    const title=file.name.replace(/\.pdf$/i,'').replace(/[-_]/g,' ');
 
     const doc={
       id:crypto.randomUUID(),
