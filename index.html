@@ -675,7 +675,7 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
     </div>
     <span id="doc-count"></span>
     <!-- Bouton nouveau dossier — visible uniquement en mode admin -->
-    <button class="btn-admin-action admin-only" style="display:none;font-size:.82rem;padding:7px 14px;white-space:nowrap" onclick="openCreateFolderModal()">
+    <button id="btn-new-folder-home" class="btn-admin-action" style="display:none;font-size:.82rem;padding:7px 14px;white-space:nowrap" onclick="openCreateFolderModal()">
       <i class="ti ti-folder-plus"></i> Nouveau dossier
     </button>
   </div>
@@ -1663,6 +1663,7 @@ function checkAdminPassword(){
     isAdmin=true;
     sessionStorage.setItem('fds_admin','1');
     document.body.classList.add('admin-mode');
+    document.getElementById('btn-new-folder-home').style.display='flex';
     closeModal('login-overlay');
     openAdmin();
     if(currentFolderId) renderFolderContent(); else renderFolders();
@@ -1778,6 +1779,7 @@ function logoutAdmin(){
   isAdmin=false;
   sessionStorage.removeItem('fds_admin');
   document.body.classList.remove('admin-mode');
+  document.getElementById('btn-new-folder-home').style.display='none';
   if(currentFolderId) renderFolderContent(); else renderFolders();
   showToast("Déconnecté du mode admin.","info");
 }
@@ -2544,6 +2546,7 @@ window.addEventListener('load',async()=>{
   if(sessionStorage.getItem('fds_admin')==='1'){
     isAdmin=true;
     document.body.classList.add('admin-mode');
+    document.getElementById('btn-new-folder-home').style.display='flex';
   }
 
   renderFolders();
