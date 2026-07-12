@@ -837,6 +837,10 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
     <div class="swatches-row" id="color-swatches"></div>
     <label class="modal-label">Icône</label>
     <div class="icons-row" id="icon-options"></div>
+    <label class="modal-label">Type de code (optionnel)</label>
+    <select class="modal-input" id="create-folder-type" style="margin-bottom:16px">
+      <option value="">— Aucun type spécifique —</option>
+    </select>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('create-folder-overlay')">Annuler</button>
       <button class="btn-primary" onclick="submitCreateFolder()">Créer</button>
@@ -856,13 +860,50 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
     <div class="upload-queue" id="upload-queue"></div>
     <div class="folder-select-wrap">
       <label class="modal-label">Dossier de destination</label>
-      <select class="modal-input" id="upload-folder-select" style="margin-bottom:0">
+      <select class="modal-input" id="upload-folder-select" style="margin-bottom:8px" onchange="onFolderSelectChange()">
         <option value="">— Documents généraux —</option>
       </select>
+    </div>
+    <!-- Champ code — visible uniquement si dossier typé -->
+    <div id="code-input-wrap" style="display:none;margin-bottom:16px">
+      <label class="modal-label" id="code-input-label">Code du document</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="code-prefix-display" style="font-family:monospace;font-size:1rem;font-weight:700;color:var(--red);white-space:nowrap;min-width:40px"></span>
+        <input class="modal-input" type="text" id="doc-code-number"
+          placeholder="ex: 0001"
+          style="margin-bottom:0;font-family:monospace;letter-spacing:2px"
+          oninput="onCodeNumberInput()"
+          onkeypress="return /[0-9]/.test(event.key)"
+        />
+      </div>
+      <div id="code-preview" style="font-size:.8rem;color:#888;margin-top:6px"></div>
+      <div id="code-error" style="font-size:.8rem;color:var(--red);margin-top:4px;display:none"></div>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('upload-overlay')">Annuler</button>
       <button class="btn-primary" id="btn-confirm-upload" onclick="confirmUpload()" disabled>Ajouter les documents</button>
+    </div>
+  </div>
+</div>
+
+<!-- CODE TYPE MODAL -->
+<div class="overlay" id="code-type-overlay" onclick="overlayClickClose(event,'code-type-overlay')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-title">Nouveau type de code</div>
+    <label class="modal-label">Préfixe (ex: MP, RL, COL)</label>
+    <input class="modal-input" type="text" id="ct-prefix" placeholder="ex: MP" style="text-transform:uppercase"/>
+    <label class="modal-label">Libellé</label>
+    <input class="modal-input" type="text" id="ct-label" placeholder="ex: Matière Première"/>
+    <label class="modal-label">Nombre de chiffres</label>
+    <select class="modal-input" id="ct-digits">
+      <option value="4">4 chiffres (ex: 0001)</option>
+      <option value="6">6 chiffres (ex: 000001)</option>
+      <option value="3">3 chiffres (ex: 001)</option>
+      <option value="5">5 chiffres (ex: 00001)</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('code-type-overlay')">Annuler</button>
+      <button class="btn-primary" onclick="submitAddCodeType()">Ajouter</button>
     </div>
   </div>
 </div>
@@ -1002,6 +1043,20 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
           <p class="config-note" style="margin-top:8px">Après enregistrement, la page se rechargera automatiquement.</p>
         </div>
 
+        <!-- TYPES DE CODES -->
+        <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <i class="ti ti-tag" style="color:var(--red);font-size:1.1rem"></i>
+              <span style="font-family:var(--font-head);font-size:1rem;color:#1a1a1a;font-weight:600">Types de codes documents</span>
+            </div>
+            <button class="btn-admin-action" style="font-size:.78rem;padding:6px 12px" onclick="openAddCodeTypeModal()">
+              <i class="ti ti-plus"></i> Ajouter
+            </button>
+          </div>
+          <div id="code-types-list" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -1031,6 +1086,7 @@ let isAdmin=false;
 let currentFolderId=null;
 let folderStack=[]; // pile de navigation [{id,name}]
 let pendingSubFolderParentId=null;
+let codeTypes=[]; // [{prefix,label,digits}]
 let pendingDeleteId=null;
 let pendingDeleteFolderId=null;
 let deleteDocsAlso=true;
@@ -1051,6 +1107,14 @@ async function loadFolders(){
     const data=await r.json();
     folders=Array.isArray(data)?data:[];
   }catch(e){showToast("Erreur de connexion. Veuillez réessayer.","danger");}
+}
+
+async function loadCodeTypes(){
+  try{
+    const r=await fetch(getSupabaseURL()+"/rest/v1/code_types?select=*&order=prefix.asc",{headers:getHeaders()});
+    const data=await r.json();
+    codeTypes=Array.isArray(data)?data:[];
+  }catch(e){codeTypes=[];}
 }
 
 async function loadDocuments(){
@@ -1602,6 +1666,7 @@ function openAdmin(){
   document.getElementById('config-key').value=getSupabaseKey();
   renderAdminList();
   renderDashboard();
+  renderCodeTypesList();
   openModal('admin-overlay');
 }
 
@@ -1975,6 +2040,10 @@ function openCreateFolderModal(){
   sw.innerHTML=FOLDER_COLORS.map(c=>`<div class="color-swatch${c===selectedColor?' selected':''}" style="background:${c}" onclick="selectColor('${c}')"></div>`).join('');
   const ic=document.getElementById('icon-options');
   ic.innerHTML=FOLDER_ICONS.map(i=>`<div class="icon-option${i===selectedIcon?' selected':''}" onclick="selectIcon('${i}')"><i class="ti ${i}"></i></div>`).join('');
+  // Remplir le type de code
+  const typeSelect=document.getElementById('create-folder-type');
+  typeSelect.innerHTML='<option value="">— Aucun type spécifique —</option>'+
+    codeTypes.map(ct=>`<option value="${esc(ct.prefix)}">${esc(ct.prefix)} — ${esc(ct.label)}</option>`).join('');
   openModal('create-folder-overlay');
   setTimeout(()=>document.getElementById('create-folder-name').focus(),100);
 }
@@ -2001,7 +2070,8 @@ async function submitCreateFolder(){
   const name=document.getElementById('create-folder-name').value.trim();
   if(!name){showToast("Veuillez saisir un nom.","danger");return;}
   const parentId=pendingSubFolderParentId||null;
-  await createFolder({name,code:generateFolderCode(),color:selectedColor,icon:selectedIcon,parent_id:parentId});
+  const folderType=document.getElementById('create-folder-type').value||null;
+  await createFolder({name,code:generateFolderCode(),color:selectedColor,icon:selectedIcon,parent_id:parentId,folder_type:folderType});
   pendingSubFolderParentId=null;
   closeModal('create-folder-overlay');
 }
@@ -2061,6 +2131,7 @@ async function executeDeleteFolder(){
   await deleteRecursive(folder.id);
   await loadFolders();
   await loadDocuments();
+  await loadCodeTypes();
   closeModal('delete-folder-overlay');
   if(folderStack.some(s=>s.id===pendingDeleteFolderId)) closeAllFolders();
   else if(currentFolderId) renderFolderContent();
@@ -2134,6 +2205,16 @@ function openUploadModal(){
     ).join('');
   }
   sel.innerHTML='<option value="">— Documents généraux —</option>'+buildFolderOptions();
+  // Reset code input
+  document.getElementById('code-input-wrap').style.display='none';
+  document.getElementById('doc-code-number').value='';
+  document.getElementById('code-preview').textContent='';
+  document.getElementById('code-error').style.display='none';
+  // Si on est dans un dossier typé, présélectionner et afficher le champ code
+  if(currentFolderId){
+    sel.value=currentFolderId;
+    onFolderSelectChange();
+  }
   openModal('upload-overlay');
 }
 
@@ -2229,6 +2310,95 @@ function doPrint(){
   window.print();
 }
 
+// ===================== CODE PAR TYPE DE DOSSIER =====================
+function getFolderType(folderId){
+  if(!folderId) return null;
+  const f=folders.find(x=>x.id===folderId);
+  return f?f.folder_type||null:null;
+}
+
+function getCodeType(prefix){
+  return codeTypes.find(ct=>ct.prefix===prefix)||null;
+}
+
+function onFolderSelectChange(){
+  const folderId=document.getElementById('upload-folder-select').value;
+  const folderType=getFolderType(folderId);
+  const wrap=document.getElementById('code-input-wrap');
+  const prefixDisplay=document.getElementById('code-prefix-display');
+  const label=document.getElementById('code-input-label');
+  const numInput=document.getElementById('doc-code-number');
+  const preview=document.getElementById('code-preview');
+  const errEl=document.getElementById('code-error');
+
+  numInput.value='';
+  preview.textContent='';
+  errEl.style.display='none';
+
+  if(folderType){
+    const ct=getCodeType(folderType);
+    if(ct){
+      wrap.style.display='block';
+      prefixDisplay.textContent=ct.prefix;
+      label.textContent=`Code ${ct.label} (${ct.digits} chiffres)`;
+      numInput.maxLength=ct.digits;
+      numInput.placeholder='0'.repeat(ct.digits);
+    }
+  } else {
+    wrap.style.display='none';
+  }
+}
+
+function onCodeNumberInput(){
+  const folderId=document.getElementById('upload-folder-select').value;
+  const folderType=getFolderType(folderId);
+  if(!folderType) return;
+  const ct=getCodeType(folderType);
+  if(!ct) return;
+  const num=document.getElementById('doc-code-number').value;
+  const preview=document.getElementById('code-preview');
+  const errEl=document.getElementById('code-error');
+  errEl.style.display='none';
+  if(num.length>0){
+    const padded=num.padStart(ct.digits,'0');
+    const fullCode=ct.prefix+padded;
+    preview.textContent='Code final : '+fullCode;
+    // Vérifier doublon
+    const exists=documents.some(d=>(d.code||'').toUpperCase()===fullCode.toUpperCase());
+    if(exists){
+      errEl.textContent='⚠️ Ce code existe déjà. Choisissez un autre numéro.';
+      errEl.style.display='block';
+    }
+  } else {
+    preview.textContent='';
+  }
+}
+
+async function getDocumentCode(folderId, fileName){
+  const folderType=getFolderType(folderId);
+  if(!folderType){
+    // Pas de type → code depuis nom du fichier (comportement original)
+    return await generateUniqueCode(fileName);
+  }
+  const ct=getCodeType(folderType);
+  if(!ct) return await generateUniqueCode(fileName);
+  const num=document.getElementById('doc-code-number').value;
+  if(!num){
+    showToast('Veuillez saisir le numéro du document.','danger');
+    return null;
+  }
+  const padded=num.padStart(ct.digits,'0');
+  const fullCode=ct.prefix+padded;
+  // Vérifier unicité finale
+  await loadDocuments();
+  const exists=documents.some(d=>(d.code||'').toUpperCase()===fullCode.toUpperCase());
+  if(exists){
+    showToast('Code '+fullCode+' déjà utilisé. Choisissez un autre numéro.','danger');
+    return null;
+  }
+  return fullCode;
+}
+
 // ===================== UPLOAD AVEC CODE UNIQUE GARANTI =====================
 // Pour chaque fichier, on recharge la base AVANT de générer le code
 // → impossible d'avoir deux documents avec le même code RL-XXX
@@ -2240,8 +2410,8 @@ async function confirmUpload(){
   let count=0;
 
   for(const file of uploadQueue){
-    // Recharger les codes existants depuis Supabase avant chaque insertion
-    const code=await generateUniqueCode(file.name);
+    const code=await getDocumentCode(folderSel, file.name);
+    if(!code){ btn.disabled=false; btn.textContent='Ajouter les documents'; return; }
 
     const doc={
       id:crypto.randomUUID(),
@@ -2264,6 +2434,50 @@ async function confirmUpload(){
   btn.textContent='Ajouter les documents';
   closeModal('upload-overlay');
   showToast(count+" document(s) ajouté(s) avec codes uniques.","success");
+}
+
+// ===================== TYPES DE CODES =====================
+function renderCodeTypesList(){
+  const list=document.getElementById('code-types-list');
+  if(!list)return;
+  if(codeTypes.length===0){
+    list.innerHTML='<div style="color:#aaa;font-size:.85rem;text-align:center;padding:12px">Aucun type de code défini.</div>';
+    return;
+  }
+  list.innerHTML=codeTypes.map(ct=>`
+    <div style="background:#f9f9f9;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px">
+      <span style="background:var(--tint);color:var(--dark-red);border-radius:6px;padding:3px 10px;font-family:monospace;font-weight:700;font-size:.9rem">${esc(ct.prefix)}</span>
+      <span style="flex:1;font-size:.88rem;color:#333">${esc(ct.label)}</span>
+      <span style="font-size:.78rem;color:#888">${ct.digits} chiffres</span>
+      <span style="font-size:.78rem;color:#aaa;font-family:monospace">${esc(ct.prefix)}${'0'.repeat(ct.digits)}</span>
+    </div>
+  `).join('');
+}
+
+function openAddCodeTypeModal(){
+  document.getElementById('ct-prefix').value='';
+  document.getElementById('ct-label').value='';
+  document.getElementById('ct-digits').value='4';
+  openModal('code-type-overlay');
+  setTimeout(()=>document.getElementById('ct-prefix').focus(),100);
+}
+
+async function submitAddCodeType(){
+  const prefix=document.getElementById('ct-prefix').value.trim().toUpperCase();
+  const label=document.getElementById('ct-label').value.trim();
+  const digits=parseInt(document.getElementById('ct-digits').value);
+  if(!prefix||!label){showToast('Veuillez remplir tous les champs.','danger');return;}
+  if(codeTypes.some(ct=>ct.prefix===prefix)){showToast('Ce préfixe existe déjà.','danger');return;}
+  try{
+    await fetch(getSupabaseURL()+"/rest/v1/code_types",{
+      method:"POST",headers:getHeaders(),
+      body:JSON.stringify({prefix,label,digits})
+    });
+    await loadCodeTypes();
+    renderCodeTypesList();
+    closeModal('code-type-overlay');
+    showToast('Type de code ajouté.','success');
+  }catch(e){showToast('Erreur lors de l\'ajout.','danger');}
 }
 
 // ===================== MOT DE PASSE ADMIN =====================
