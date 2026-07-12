@@ -872,8 +872,10 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
         <input class="modal-input" type="text" id="doc-code-number"
           placeholder="ex: 0001"
           style="margin-bottom:0;font-family:monospace;letter-spacing:2px"
-          oninput="onCodeNumberInput()"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'');onCodeNumberInput()"
           onkeypress="return /[0-9]/.test(event.key)"
+          inputmode="numeric"
+          pattern="[0-9]*"
         />
       </div>
       <div id="code-preview" style="font-size:.8rem;color:#888;margin-top:6px"></div>
@@ -1402,11 +1404,11 @@ function renderFolderContent(){
   const q=(document.getElementById('search-input-folder').value||'').toLowerCase();
   const subFolders=folders.filter(f=>(f.parent_id||null)===currentFolderId);
   const folderGrid=document.getElementById('folders-grid');
-  const adminBtn=isAdmin?`<div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-    <button class="btn-admin-action" style="font-size:.82rem;padding:7px 14px" onclick="openCreateSubFolderModal(currentFolderId)">
+  const adminBtn=isAdmin?`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+    <button class="btn-admin-action" style="font-size:.78rem;padding:6px 12px;border-radius:8px" onclick="openCreateSubFolderModal(currentFolderId)">
       <i class="ti ti-folder-plus"></i> Nouveau sous-dossier
     </button>
-    <button class="btn-admin-action" style="font-size:.82rem;padding:7px 14px;background:var(--dark-red)" onclick="openUploadModal()">
+    <button class="btn-admin-action" style="font-size:.78rem;padding:6px 12px;border-radius:8px;background:var(--dark-red)" onclick="openUploadModal()">
       <i class="ti ti-file-plus"></i> Ajouter un PDF
     </button>
   </div>`:'';
