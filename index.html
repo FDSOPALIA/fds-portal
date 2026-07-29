@@ -867,16 +867,18 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
         <option value="">— Documents généraux —</option>
       </select>
     </div>
-    <!-- Champ code — visible uniquement si dossier typé -->
-    <div id="code-input-wrap" style="display:none;margin-bottom:16px">
-      <label class="modal-label" id="code-input-label">Code du document</label>
+    <!-- Champ code — toujours disponible, préfixe et chiffres 100% libres -->
+    <div id="code-input-wrap" style="margin-bottom:16px">
+      <label class="modal-label" id="code-input-label">Code du document (optionnel)</label>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <input class="modal-input" type="text" id="code-prefix-input"
           placeholder="ex: RL"
           maxlength="8"
+          list="known-prefixes-list"
           style="margin-bottom:0;font-family:monospace;font-weight:700;color:var(--red);width:90px;text-transform:uppercase"
           oninput="this.value=this.value.toUpperCase();onCodeNumberInput()"
         />
+        <datalist id="known-prefixes-list"></datalist>
         <input class="modal-input" type="text" id="doc-code-number"
           placeholder="ex: 0001"
           style="margin-bottom:0;font-family:monospace;letter-spacing:2px;flex:1"
@@ -1589,6 +1591,19 @@ function base64ToBlobUrl(base64){
 async function openViewer(id){
   const doc=documents.find(d=>d.id===id);
   if(!doc)return;
+
+  const isMobile=/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  // Sur mobile, on ouvre un onglet vide TOUT DE SUITE, de façon synchrone, pour
+  // conserver le geste utilisateur et éviter que le navigateur bloque le popup
+  // (un window.open() appelé après un await réseau est traité comme non désiré).
+  // On y injectera le PDF une fois chargé. Si l'ouverture échoue (ex: accès
+  // automatique via un QR code, sans clic direct de l'utilisateur), on affiche
+  // le PDF dans la visionneuse intégrée à la place.
+  let mobileWindow=null;
+  if(isMobile){
+    try{ mobileWindow=window.open('','_blank'); }catch(e){ mobileWindow=null; }
+  }
+
   document.getElementById('viewer-title').textContent=doc.title||'';
   document.getElementById('viewer-code').textContent=doc.code||'';
   document.getElementById('viewer-embed').src='';
@@ -1606,6 +1621,7 @@ async function openViewer(id){
   if(!base64){
     showToast("Impossible de charger le document.","danger");
     closeModal('viewer-overlay');
+    if(mobileWindow && !mobileWindow.closed) mobileWindow.close();
     return;
   }
   doc.base64=base64;
@@ -1616,10 +1632,13 @@ async function openViewer(id){
   if(embed._blobUrl){ URL.revokeObjectURL(embed._blobUrl); }
   embed._blobUrl=blobUrl;
 
-  if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
-    window.open(blobUrl,'_blank');
-    closeViewer();
+  if(isMobile && mobileWindow && !mobileWindow.closed){
+    // L'onglet a bien pu s'ouvrir (clic direct de l'utilisateur) — on y charge le PDF
+    mobileWindow.location=blobUrl+"#toolbar=1&view=FitH";
+    closeModal('viewer-overlay');
   } else {
+    // Onglet bloqué par le navigateur (ou desktop) — on affiche le PDF directement
+    // dans la visionneuse intégrée déjà ouverte ; le bouton Télécharger reste disponible.
     embed.src=blobUrl+"#toolbar=1&navpanes=0&view=FitH";
   }
 
@@ -2246,17 +2265,17 @@ function openUploadModal(){
   }
   sel.innerHTML='<option value="">— Documents généraux —</option>'+buildFolderOptions();
   // Reset code input
-  document.getElementById('code-input-wrap').style.display='none';
   document.getElementById('code-prefix-input').value='';
   document.getElementById('code-digits-input').value='4';
   document.getElementById('doc-code-number').value='';
   document.getElementById('code-preview').textContent='';
   document.getElementById('code-error').style.display='none';
-  // Si on est dans un dossier typé, présélectionner et afficher le champ code
+  renderPrefixDatalist();
+  // Présélectionner le dossier courant (le champ code reste toujours visible et modifiable)
   if(currentFolderId){
     sel.value=currentFolderId;
-    onFolderSelectChange();
   }
+  onFolderSelectChange();
   openModal('upload-overlay');
 }
 
@@ -2363,13 +2382,33 @@ function getCodeType(prefix){
   return codeTypes.find(ct=>ct.prefix===prefix)||null;
 }
 
+function renderPrefixDatalist(){
+  const dl=document.getElementById('known-prefixes-list');
+  if(!dl)return;
+  dl.innerHTML=codeTypes.map(ct=>`<option value="${esc(ct.prefix)}">${esc(ct.prefix)} — ${esc(ct.label)}</option>`).join('');
+}
+
+// Enregistre automatiquement un nouveau préfixe dans la liste des types de codes
+// (Configuration > Types de codes documents) s'il n'y figure pas déjà.
+async function ensurePrefixRegistered(prefix,digits){
+  if(!prefix) return;
+  if(codeTypes.some(ct=>ct.prefix===prefix)) return; // déjà connu, on ne l'écrase pas
+  try{
+    await fetch(getSupabaseURL()+"/rest/v1/code_types",{
+      method:"POST",headers:getHeaders(),
+      body:JSON.stringify({prefix,label:prefix,digits})
+    });
+    await loadCodeTypes();
+    renderPrefixDatalist();
+    renderCodeTypesList();
+  }catch(e){/* non bloquant : le document est quand même créé */}
+}
+
 function onFolderSelectChange(){
   const folderId=document.getElementById('upload-folder-select').value;
   const folderType=getFolderType(folderId);
-  const wrap=document.getElementById('code-input-wrap');
   const prefixInput=document.getElementById('code-prefix-input');
   const digitsInput=document.getElementById('code-digits-input');
-  const label=document.getElementById('code-input-label');
   const numInput=document.getElementById('doc-code-number');
   const preview=document.getElementById('code-preview');
   const errEl=document.getElementById('code-error');
@@ -2378,12 +2417,10 @@ function onFolderSelectChange(){
   preview.textContent='';
   errEl.style.display='none';
 
+  // Le champ code reste toujours visible et 100% modifiable.
+  // Si le dossier a un type par défaut, on pré-remplit à titre indicatif seulement.
   if(folderType){
-    // Le dossier a un type par défaut — on pré-remplit le préfixe et le nombre
-    // de chiffres à titre indicatif, mais les deux restent librement modifiables.
     const ct=getCodeType(folderType);
-    wrap.style.display='block';
-    label.textContent='Code du document';
     if(ct){
       prefixInput.value=ct.prefix;
       digitsInput.value=ct.digits;
@@ -2394,17 +2431,17 @@ function onFolderSelectChange(){
       numInput.placeholder='0000';
     }
   } else {
-    wrap.style.display='none';
+    prefixInput.value='';
+    digitsInput.value=4;
+    numInput.placeholder='0000';
   }
+  onCodeNumberInput();
 }
 
 function onCodeNumberInput(){
-  const folderId=document.getElementById('upload-folder-select').value;
-  const folderType=getFolderType(folderId);
-  if(!folderType) return;
   const prefix=(document.getElementById('code-prefix-input').value||'').trim().toUpperCase();
   let digits=parseInt(document.getElementById('code-digits-input').value);
-  if(!digits||digits<1) digits=1;
+  if(!digits||digits<1) digits=4;
   document.getElementById('doc-code-number').placeholder='0'.repeat(digits);
   const num=document.getElementById('doc-code-number').value;
   const preview=document.getElementById('code-preview');
@@ -2424,29 +2461,27 @@ function onCodeNumberInput(){
       errEl.style.display='block';
       errEl.style.color='#1565c0';
     } else {
-      preview.textContent='Code final : '+baseCode;
+      const isNewPrefix=!codeTypes.some(ct=>ct.prefix===prefix);
+      preview.textContent='Code final : '+baseCode+(isNewPrefix?' (nouveau préfixe — sera ajouté à la liste)':'');
     }
+  } else if(!prefix){
+    preview.textContent='Aucun préfixe saisi : le code sera généré automatiquement depuis le nom du fichier.';
   } else {
     preview.textContent='';
   }
 }
 
 async function getDocumentCode(folderId, fileName){
-  const folderType=getFolderType(folderId);
-  if(!folderType){
-    // Pas de type → code depuis nom du fichier
-    return await generateUniqueCode(fileName);
-  }
   const prefix=(document.getElementById('code-prefix-input').value||'').trim().toUpperCase();
   if(!prefix){
-    showToast('Veuillez saisir le préfixe du code.','danger');
-    return null;
+    // Aucun préfixe saisi → code généré depuis le nom du fichier (comportement par défaut)
+    return await generateUniqueCode(fileName);
   }
   let digits=parseInt(document.getElementById('code-digits-input').value);
-  if(!digits||digits<1) digits=1;
+  if(!digits||digits<1) digits=4;
   const num=document.getElementById('doc-code-number').value;
   if(!num){
-    showToast('Veuillez saisir le numéro du document.','danger');
+    showToast('Veuillez saisir le numéro du document, ou effacer le préfixe pour un code automatique.','danger');
     return null;
   }
   const padded=num.padStart(digits,'0');
@@ -2455,13 +2490,16 @@ async function getDocumentCode(folderId, fileName){
   await loadDocuments();
   // Vérifier si le code de base existe déjà
   const existingCodes=documents.map(d=>(d.code||'').toUpperCase());
-  if(!existingCodes.includes(baseCode.toUpperCase())){
-    return baseCode; // RL0001 → libre
+  let finalCode=baseCode;
+  if(existingCodes.includes(baseCode.toUpperCase())){
+    // Doublon → ajouter suffixe (1), (2), ...
+    let n=1;
+    while(existingCodes.includes((baseCode+'('+n+')').toUpperCase())) n++;
+    finalCode=baseCode+'('+n+')';
   }
-  // Doublon → ajouter suffixe (1), (2), ...
-  let n=1;
-  while(existingCodes.includes((baseCode+'('+n+')').toUpperCase())) n++;
-  return baseCode+'('+n+')'; // RL0001(1), RL0001(2)...
+  // Enregistrer ce préfixe s'il est nouveau, pour qu'il soit réutilisable ensuite
+  await ensurePrefixRegistered(prefix,digits);
+  return finalCode;
 }
 
 // ===================== UPLOAD AVEC CODE UNIQUE GARANTI =====================
@@ -2544,6 +2582,7 @@ async function submitAddCodeType(){
     });
     await loadCodeTypes();
     renderCodeTypesList();
+    renderPrefixDatalist();
     closeModal('code-type-overlay');
     showToast('Type de code ajouté.','success');
   }catch(e){showToast('Erreur lors de l\'ajout.','danger');}
@@ -2595,12 +2634,14 @@ window.addEventListener('load',async()=>{
   if(viewId){
     setTimeout(()=>{
       const d=documents.find(x=>x.id===viewId)||documents.find(x=>x.code===viewId);
-      if(d)openViewer(d.id);
+      if(d) openViewer(d.id);
+      else showToast("Document introuvable ou supprimé.","danger");
     },300);
   } else if(folderId){
     setTimeout(()=>{
       const f=folders.find(x=>x.id===folderId)||folders.find(x=>x.code===folderId);
-      if(f)openFolder(f.id);
+      if(f) openFolder(f.id);
+      else showToast("Dossier introuvable ou supprimé.","danger");
     },300);
   }
 });
