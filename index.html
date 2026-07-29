@@ -2609,8 +2609,63 @@ function resetConfig(){
   setTimeout(()=>location.reload(),1500);
 }
 
+// Accès direct à un PDF via QR code (?view=id) : on affiche uniquement un
+// écran de chargement (pas la page d'accueil), puis on navigue l'onglet
+// actuel directement vers le PDF. Comme c'est la MÊME fenêtre qui a créé le
+// blob, le navigateur l'affiche nativement (visionneuse PDF intégrée) au
+// lieu de tenter un téléchargement — contrairement à l'ouverture d'un
+// nouvel onglet qui pouvait échouer selon les navigateurs.
+async function openDirectPdfFromQR(viewId){
+  document.getElementById('search-toolbar').style.display='none';
+  document.getElementById('folders-section').style.display='none';
+  document.getElementById('docs-section').style.display='none';
+  document.getElementById('loading-state').style.display='flex';
+
+  await loadDocuments();
+  const doc=documents.find(x=>x.id===viewId)||documents.find(x=>x.code===viewId);
+
+  if(!doc){
+    document.getElementById('loading-state').style.display='none';
+    showToast("Document introuvable ou supprimé.","danger");
+    await loadFolders();
+    await loadCodeTypes();
+    renderFolders();
+    setTimeout(()=>makeQR('qr-home-box',buildHomeURL(),100),100);
+    return;
+  }
+
+  // Incrémenter le compteur de vues avant de quitter la page (on attend la
+  // requête pour être sûr qu'elle parte avant la navigation).
+  const newViews=(doc.views||0)+1;
+  await saveDocumentUpdate(doc.id,{views:newViews}).catch(()=>{});
+
+  const base64=doc.base64||await fetchBase64(doc.id);
+  if(!base64){
+    document.getElementById('loading-state').style.display='none';
+    showToast("Impossible de charger le document.","danger");
+    await loadFolders();
+    await loadCodeTypes();
+    renderFolders();
+    setTimeout(()=>makeQR('qr-home-box',buildHomeURL(),100),100);
+    return;
+  }
+
+  const blobUrl=base64ToBlobUrl(base64);
+  location.href=blobUrl;
+}
+
 // ===================== PAGE LOAD & ROUTING =====================
 window.addEventListener('load',async()=>{
+  const params=new URLSearchParams(window.location.search);
+  const viewId=params.get('view');
+  const folderId=params.get('folder');
+
+  if(viewId){
+    // Ouverture directe du PDF — ne passe pas par la page d'accueil.
+    await openDirectPdfFromQR(viewId);
+    return;
+  }
+
   document.getElementById('loading-state').style.display='flex';
   await loadFolders();
   await loadDocuments();
@@ -2628,16 +2683,7 @@ window.addEventListener('load',async()=>{
 
   setTimeout(()=>makeQR('qr-home-box',buildHomeURL(),100),100);
 
-  const params=new URLSearchParams(window.location.search);
-  const viewId=params.get('view');
-  const folderId=params.get('folder');
-  if(viewId){
-    setTimeout(()=>{
-      const d=documents.find(x=>x.id===viewId)||documents.find(x=>x.code===viewId);
-      if(d) openViewer(d.id);
-      else showToast("Document introuvable ou supprimé.","danger");
-    },300);
-  } else if(folderId){
+  if(folderId){
     setTimeout(()=>{
       const f=folders.find(x=>x.id===folderId)||folders.find(x=>x.code===folderId);
       if(f) openFolder(f.id);
