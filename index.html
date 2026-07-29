@@ -591,9 +591,44 @@ footer{background:var(--footer);color:#ccc;padding:60px 24px 0}
   .modal-box{padding:24px 18px}
   #admin-header{gap:8px}
 }
+
+/* MODE ACCÈS DIRECT PDF (scan QR d'un document) — masque toute la page
+   d'accueil dès le chargement, avant même que le JS ne s'exécute. */
+html.direct-pdf-mode #site-header,
+html.direct-pdf-mode #hero,
+html.direct-pdf-mode #qr-card,
+html.direct-pdf-mode #breadcrumb-bar,
+html.direct-pdf-mode #main-wrap,
+html.direct-pdf-mode footer{
+  display:none !important;
+}
+#direct-pdf-loading{
+  display:none;position:fixed;inset:0;z-index:9999;background:#f7f7f7;
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+html.direct-pdf-mode #direct-pdf-loading{display:flex !important}
+#direct-pdf-loading span{font-family:var(--font-body);color:#666;font-size:.9rem}
 </style>
 </head>
 <body>
+
+<!-- Détection très précoce (avant tout rendu visuel) d'un accès direct à un PDF -->
+<script>
+(function(){
+  try{
+    var p=new URLSearchParams(window.location.search);
+    if(p.get('view')){
+      document.documentElement.classList.add('direct-pdf-mode');
+    }
+  }catch(e){}
+})();
+</script>
+
+<!-- Écran de chargement dédié à l'ouverture directe d'un PDF (scan QR) -->
+<div id="direct-pdf-loading">
+  <div class="spinner"></div>
+  <span>Ouverture du document…</span>
+</div>
 
 <!-- HEADER -->
 <header id="site-header">
@@ -2615,17 +2650,18 @@ function resetConfig(){
 // blob, le navigateur l'affiche nativement (visionneuse PDF intégrée) au
 // lieu de tenter un téléchargement — contrairement à l'ouverture d'un
 // nouvel onglet qui pouvait échouer selon les navigateurs.
+// Accès direct à un PDF via QR code (?view=id) : la classe 'direct-pdf-mode'
+// (posée en tête de <body>, avant tout rendu) masque déjà toute la page
+// d'accueil et affiche l'écran de chargement dédié. On navigue ensuite
+// l'onglet actuel directement vers le PDF. Comme c'est la MÊME fenêtre qui
+// a créé le blob, le navigateur l'affiche nativement (visionneuse PDF
+// intégrée) au lieu de tenter un téléchargement.
 async function openDirectPdfFromQR(viewId){
-  document.getElementById('search-toolbar').style.display='none';
-  document.getElementById('folders-section').style.display='none';
-  document.getElementById('docs-section').style.display='none';
-  document.getElementById('loading-state').style.display='flex';
-
   await loadDocuments();
   const doc=documents.find(x=>x.id===viewId)||documents.find(x=>x.code===viewId);
 
   if(!doc){
-    document.getElementById('loading-state').style.display='none';
+    document.documentElement.classList.remove('direct-pdf-mode');
     showToast("Document introuvable ou supprimé.","danger");
     await loadFolders();
     await loadCodeTypes();
@@ -2641,7 +2677,7 @@ async function openDirectPdfFromQR(viewId){
 
   const base64=doc.base64||await fetchBase64(doc.id);
   if(!base64){
-    document.getElementById('loading-state').style.display='none';
+    document.documentElement.classList.remove('direct-pdf-mode');
     showToast("Impossible de charger le document.","danger");
     await loadFolders();
     await loadCodeTypes();
